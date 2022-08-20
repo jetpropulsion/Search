@@ -1,56 +1,53 @@
 ﻿using System;
 using System.Text;
+using Search.Interfaces;
 
 namespace Search
 {
-	public interface ISearch
+	public class BadCharsBase
 	{
-		delegate void Found(int offset);
-		void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, Found found);
-	};  //END: public interface ISearch
-
-	public class BoyerMoore : ISearch
-	{
-		public int MaxSearchStringLength { get; protected set; } = -1;
-		public int MaxAlphabetSize { get; protected set; } = -1;
-
-		private int[] bmGs;
-		private int[] bmBc;
-		private int[] suff;
-
-		public BoyerMoore()
+		protected int[] BadChars;
+		public BadCharsBase(int maxAlphabetSize)
 		{
-			this.bmGs = Array.Empty<int>();
-			this.bmBc = Array.Empty<int>();
-			this.suff = Array.Empty<int>();
+			this.BadChars = new int[maxAlphabetSize];
 		}
-		private void PreBmBc(ReadOnlySpan<byte> pattern)
+		public virtual void Init(ReadOnlySpan<byte> pattern)
 		{
 			int m = pattern.Length;
-			for (int i = 0; i < this.bmBc.Length; ++i)
+			for (int i = 0; i < this.BadChars.Length; ++i)
 			{
-				this.bmBc[i] = m;
+				this.BadChars[i] = m;
 			}
 			for (int i = 0; i < m - 1; ++i)
 			{
-				this.bmBc[ pattern[i] ] = m - i - 1;
+				this.BadChars[pattern[i]] = m - i - 1;
 			}
 		}
-		private void PreBmSuffixes(ReadOnlySpan<byte> pattern)
+	};
+
+	public class SuffixesBase
+	{
+		protected int[] Suffixes;
+
+		public SuffixesBase(int maxSearchStringLength)
+		{
+			this.Suffixes = new int[maxSearchStringLength];
+		}
+
+		public virtual void Init(ReadOnlySpan<byte> pattern)
 		{
 			int m = pattern.Length;
 			int mm1 = m - 1;
 			int mm2 = m - 2;
 			int f = 0;
 			int g = mm1;
-			suff[mm1] = m;
+			this.Suffixes[mm1] = m;
 
-			int i;
-			for (i = mm2; i >= 0; --i)
+			for (int i = mm2; i >= 0; --i)
 			{
-				if ((i > g) && ((suff[i + mm1 - f] < i - g)))
+				if ((i > g) && ((this.Suffixes[i + mm1 - f] < i - g)))
 				{
-					suff[i] = suff[i + mm1 - f];
+					this.Suffixes[i] = this.Suffixes[i + mm1 - f];
 				}
 				else
 				{
@@ -63,34 +60,43 @@ namespace Search
 					{
 						--g;
 					}
-					suff[i] = f - g;
+					this.Suffixes[i] = f - g;
 				}
 			}
-		}
 
-		private void PreBmGs(ReadOnlySpan<byte> pattern)
+		}
+	};
+
+	public class GoodSuffixesBase : SuffixesBase
+	{
+		protected int[] GoodSuffixes;
+		public GoodSuffixesBase(int maxSearchStringLength) : base(maxSearchStringLength)
+		{
+			this.GoodSuffixes = new int[maxSearchStringLength];
+		}
+		public override void Init(ReadOnlySpan<byte> pattern)
 		{
 			int m = pattern.Length;
 			int mm1 = m - 1;
 			int mm2 = m - 2;
 
-			this.PreBmSuffixes(pattern);
+			base.Init(pattern);
 
 			for (int i = 0; i < m; ++i)
 			{
-				bmGs[i] = m;
+				GoodSuffixes[i] = m;
 			}
 
 			int j = 0;
 			for (int i = mm1; i >= 0; --i)
 			{
-				if (suff[i] == i + 1)
+				if (Suffixes[i] == i + 1)
 				{
 					for (; j < mm1 - i; ++j)
 					{
-						if (bmGs[j] == m)
+						if (GoodSuffixes[j] == m)
 						{
-							bmGs[j] = mm1 - i;
+							GoodSuffixes[j] = mm1 - i;
 						}
 					}
 				}
@@ -98,25 +104,123 @@ namespace Search
 
 			for (int i = 0; i <= mm2; ++i)
 			{
-				bmGs[mm1 - suff[i]] = mm1 - i;
+				GoodSuffixes[mm1 - Suffixes[i]] = mm1 - i;
 			}
 		}
-		public void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, ISearch.Found found)
+	};
+
+	public class BoyerMoore : ISearch
+	{
+		protected int[] GoodSuffixes;
+		protected int[] BadChars;
+		protected int[] Suffixes;
+
+		public BoyerMoore()
+		{
+			this.GoodSuffixes = Array.Empty<int>();
+			this.BadChars = Array.Empty<int>();
+			this.Suffixes = Array.Empty<int>();
+		}
+		protected void InitBadChars(ReadOnlySpan<byte> pattern)
+		{
+			int m = pattern.Length;
+			for (int i = 0; i < this.BadChars.Length; ++i)
+			{
+				this.BadChars[i] = m;
+			}
+			for (int i = 0; i < m - 1; ++i)
+			{
+				this.BadChars[ pattern[i] ] = m - i - 1;
+			}
+		}
+		protected void InitSuffixes(ReadOnlySpan<byte> pattern)
+		{
+			int m = pattern.Length;
+			int mm1 = m - 1;
+			int mm2 = m - 2;
+			int f = 0;
+			int g = mm1;
+			Suffixes[mm1] = m;
+
+			int i;
+			for (i = mm2; i >= 0; --i)
+			{
+				if ((i > g) && ((Suffixes[i + mm1 - f] < i - g)))
+				{
+					Suffixes[i] = Suffixes[i + mm1 - f];
+				}
+				else
+				{
+					if (i < g)
+					{
+						g = i;
+					}
+					f = i;
+					while ((g >= 0) && (pattern[g] == pattern[g + mm1 - f]))
+					{
+						--g;
+					}
+					Suffixes[i] = f - g;
+				}
+			}
+		}
+
+		protected void InitGoodSuffixes(ReadOnlySpan<byte> pattern)
+		{
+			int m = pattern.Length;
+			int mm1 = m - 1;
+			int mm2 = m - 2;
+
+			this.InitSuffixes(pattern);
+
+			for (int i = 0; i < m; ++i)
+			{
+				GoodSuffixes[i] = m;
+			}
+
+			int j = 0;
+			for (int i = mm1; i >= 0; --i)
+			{
+				if (Suffixes[i] == i + 1)
+				{
+					for (; j < mm1 - i; ++j)
+					{
+						if (GoodSuffixes[j] == m)
+						{
+							GoodSuffixes[j] = mm1 - i;
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i <= mm2; ++i)
+			{
+				GoodSuffixes[mm1 - Suffixes[i]] = mm1 - i;
+			}
+		}
+
+		public virtual void Init(ReadOnlySpan<byte> pattern)
 		{
 			//Init
-			this.MaxSearchStringLength = pattern.Length;
-			this.MaxAlphabetSize = 256;
+			int maxSearchStringLength = pattern.Length;
+			int maxAlphabetSize = 256;
 
-			this.bmGs = new int[MaxSearchStringLength];
-			this.bmBc = new int[MaxAlphabetSize];
-			this.suff = new int[MaxSearchStringLength];
+			this.GoodSuffixes = new int[maxSearchStringLength];
+			this.BadChars = new int[maxAlphabetSize];
+			this.Suffixes = new int[maxSearchStringLength];
 
 			//Init common structures
-			this.PreBmGs(pattern);
-			this.PreBmBc(pattern);
+			this.InitGoodSuffixes(pattern);
+			this.InitBadChars(pattern);
+		}
+
+		public virtual void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
+		{
+			//Initialize
+			Init(pattern);
 
 			//Searching
-			int j = 0;
+			int j = offset;
 			int m = pattern.Length;
 			int n = buffer.Length;
 			int mm1 = m - 1;
@@ -131,13 +235,16 @@ namespace Search
 				}
 				if(i < 0)
 				{
-					found(j);
+					if(!found(j))
+					{
+						return;
+					}
 
-					j += this.bmGs[0];
+					j += this.GoodSuffixes[0];
 				}
 				else
 				{
-					j += Math.Max(this.bmGs[i], this.bmBc[ buffer[i + j] ] - mp1 + i);
+					j += Math.Max(this.GoodSuffixes[i], this.BadChars[ buffer[i + j] ] - mp1 + i);
 				}
 			}
 		}
