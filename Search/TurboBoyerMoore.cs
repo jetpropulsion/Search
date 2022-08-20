@@ -74,6 +74,7 @@ namespace Search
 				j += shift;
 			}
 		}
-	} //END: class TurboBoyerMoore
-};
+	};	//END: class TurboBoyerMoore
+};	//END: namespace Search
+
 
