@@ -7,13 +7,23 @@ using Search.Interfaces;
 
 namespace Search
 {
-	public class TurboBoyerMoore : BoyerMoore
+	/// <summary>
+	//	name:										Turbo Boyer-Moore algorithm
+	//	direction:							right to left
+	//	preprocess complexity:	O(m+s) time and space
+	//	search complexity:			O(n)
+	//	worst case:							2n text character comparisons
+	//	ref:										CROCHEMORE, M., CZUMAJ A., GASIENIEC L., JAROMINEK S., LECROQ T., PLANDOWSKI W., RYTTER W., 1992, Deux m�thodes pour acc�l�rer l'algorithme de Boyer-Moore, in Th�orie des Automates et Applications, Actes des 2e Journ�es Franco-Belges, D. Krob ed., Rouen, France, 1991, pp 45-63, PUR 176, Rouen, France.
+	/// </summary>
+	public class TurboBoyerMoore : BoyerMoore, ISearch
 	{
+		public TurboBoyerMoore(ReadOnlySpan<byte> pattern) : base(pattern)
+		{
+
+		}
+
 		public override void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
 		{
-			//Initialize
-			base.Init(pattern);
-
 			//Searching
 			int m = pattern.Length;
 			int n = buffer.Length;

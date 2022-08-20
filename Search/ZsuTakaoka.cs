@@ -9,22 +9,31 @@ using System.Threading.Tasks;
 
 namespace Search
 {
+	/// <summary>
+	//	name:										Zhu-Takaoka algorithm
+	//	search direction:				right to left
+	//	preprocess complexity:	O(m+s*s) time and space
+	//	search complexity:			O(mn) time
+	//	worst case:							n*n text character comparisons (quadratic worst case)
+	//	ref:										ZHU R.F., TAKAOKA T., 1987, On improving the average case of the Boyer-Moore string matching algorithm, Journal of Information Processing 10(3):173-177.
+	/// </summary>
 	public class ZsuTakaoka : ISearch
 	{
-		protected GoodSuffixesBase GoodSuffixes;
+		protected GoodSuffixesBoyerMoore GoodSuffixes;
 		protected BadCharsZsuTakaoka BadChars;
 
-		public virtual void Init(ReadOnlySpan<byte> pattern)
+		public ZsuTakaoka(ReadOnlySpan<byte> pattern)
 		{
-			this.GoodSuffixes = new GoodSuffixesBase(pattern); 
+			this.Init(pattern);
+		}
+		public void Init(ReadOnlySpan<byte> pattern)
+		{
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(pattern); 
 			this.BadChars = new BadCharsZsuTakaoka(pattern);
 		}
 
 		public virtual void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
 		{
-			//Initialize
-			this.Init(pattern);
-
 			//Searching
 			int m = pattern.Length;
 			int n = buffer.Length;

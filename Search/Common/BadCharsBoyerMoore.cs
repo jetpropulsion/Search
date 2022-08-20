@@ -8,10 +8,10 @@ namespace Search.Common
 {
 	//In reference literature and/or implementation, "BadCharsBase" is known as "bmBc"
 	//Used by: Boyer-Moore and derivatives (Turbo BM, Tuned BM, Horspool, Raita, Zsu-Takaoka)
-	public class BadCharsBase
+	public class BadCharsBoyerMoore
 	{
 		protected int[] BadChars;
-		public BadCharsBase(ReadOnlySpan<byte> pattern)
+		public BadCharsBoyerMoore(ReadOnlySpan<byte> pattern)
 		{
 			const int MaxAlphabetSize = 256;
 

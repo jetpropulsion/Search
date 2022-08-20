@@ -2,6 +2,7 @@
 using System.Text;
 using Search.Interfaces;
 using Search.Common;
+using System.Text.RegularExpressions;
 
 namespace Search
 {
@@ -13,18 +14,16 @@ namespace Search
 	//	worst case:							3n text character comparisons (when searching non-periodic pattern)
 	//	ref:										BOYER R.S., MOORE J.S., 1977, A fast string searching algorithm. Communications of the ACM. 20:762-772.
 	/// </summary>
-	public class BoyerMoore : ISearch
+	public class Raita : ISearch
 	{
 		protected BadCharsBoyerMoore BadChars;
-		protected GoodSuffixesBoyerMoore GoodSuffixes;
 
-		public BoyerMoore(ReadOnlySpan<byte> pattern)
+		public Raita(ReadOnlySpan<byte> pattern)
 		{
 			this.Init(pattern);
 		}
 		public void Init(ReadOnlySpan<byte> pattern)
 		{
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(pattern);
 			this.BadChars = new BadCharsBoyerMoore(pattern);
 		}
 
@@ -35,31 +34,35 @@ namespace Search
 			int m = pattern.Length;
 			int n = buffer.Length;
 			int mm1 = m - 1;
-			int mp1 = m + 1;
+			int mm2 = mm1 - 1;
+			int mr1 = m >> 1;
 
-			while(j <= n - m)
+			byte first = pattern[0];
+			byte middle = pattern[mr1];
+			byte last = pattern[mm1];
+
+			ReadOnlySpan<byte> patternCut = pattern[1..mm2];
+
+			while (j <= n - m)
 			{
-				int i = mm1;
-				while(i >= 0 && pattern[i] == buffer[i + j])
-				{
-					--i;
-				}
-				if(i < 0)
+				byte c = buffer[j + mm1];
+
+				if ((last == c) &&
+						(middle == buffer[j + mr1]) &&
+						(first == buffer[j]) &&
+						patternCut.SequenceEqual(buffer[(j + 1)..(j + mm2)])
+				)
 				{
 					if(!found(j))
 					{
 						return;
 					}
+				}
 
-					j += this.GoodSuffixes[0];
-				}
-				else
-				{
-					j += Math.Max(this.GoodSuffixes[i], this.BadChars[ buffer[i + j] ] - mp1 + i);
-				}
+				j += this.BadChars[c];
 			}
 		}
-	};  //END: public class BoyerMoore
+	};  //END: public class Raita
 
 };  //END: namespace Search
 

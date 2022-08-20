@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Search.Common
 {
 	//In reference literature and/or implementation, "GoodSuffixesBase" is known as "bmGs"
-	public class GoodSuffixesBase : SuffixesBase
+	public class GoodSuffixesBoyerMoore : SuffixesBase
 	{
 		protected int[] GoodSuffixes;
-		public GoodSuffixesBase(ReadOnlySpan<byte> pattern) : base(pattern)
+		public GoodSuffixesBoyerMoore(ReadOnlySpan<byte> pattern) : base(pattern)
 		{
 			int m = pattern.Length;
 
