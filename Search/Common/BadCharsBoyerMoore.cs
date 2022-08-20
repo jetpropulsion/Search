@@ -11,8 +11,10 @@ namespace Search.Common
 	public class BadCharsBoyerMoore
 	{
 		protected int[] BadChars;
-		public BadCharsBoyerMoore(ReadOnlySpan<byte> pattern)
+		public BadCharsBoyerMoore(ReadOnlyMemory<byte> patternMemory)
 		{
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
+
 			const int MaxAlphabetSize = 256;
 
 			//Allocate

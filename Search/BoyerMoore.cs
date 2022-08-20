@@ -18,19 +18,21 @@ namespace Search
 		protected BadCharsBoyerMoore BadChars;
 		protected GoodSuffixesBoyerMoore GoodSuffixes;
 
-		public BoyerMoore(ReadOnlySpan<byte> pattern)
+		public BoyerMoore()
 		{
-			this.Init(pattern);
 		}
-		public void Init(ReadOnlySpan<byte> pattern)
+		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
 		{
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(pattern);
-			this.BadChars = new BadCharsBoyerMoore(pattern);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
+		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
 		{
 			//Searching
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> buffer = bufferMemory.Span;
+
 			int j = offset;
 			int m = pattern.Length;
 			int n = buffer.Length;

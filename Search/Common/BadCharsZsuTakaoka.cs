@@ -12,7 +12,7 @@ namespace Search.Common
 	public class BadCharsZsuTakaoka
 	{
 		protected int[,] BadChars;
-		public BadCharsZsuTakaoka(ReadOnlySpan<byte> pattern)
+		public BadCharsZsuTakaoka(ReadOnlyMemory<byte> patternMemory)
 		{
 			const int MaxAlphabetSize = 256;
 
@@ -20,25 +20,22 @@ namespace Search.Common
 			this.BadChars = new int[MaxAlphabetSize, MaxAlphabetSize];
 
 			//Init
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
 			int m = pattern.Length;
-			int i;
-			int j;
 			int mm1 = m - 1;
 
-			for (i = 0; i < MaxAlphabetSize; ++i)
+			for (int i = 0; i < MaxAlphabetSize; ++i)
 			{
-				for (j = 0; j < MaxAlphabetSize; ++j)
+				for (int j = 0; j < MaxAlphabetSize; ++j)
 				{
 					this.BadChars[i, j] = m;
 				}
 			}
-
-			for (i = 0; i < MaxAlphabetSize; ++i)
+			for (int i = 0; i < MaxAlphabetSize; ++i)
 			{
 				this.BadChars[i, pattern[0]] = mm1;
 			}
-
-			for (i = 1; i < mm1; ++i)
+			for (int i = 1; i < mm1; ++i)
 			{
 				this.BadChars[ pattern[i - 1], pattern[i] ] = mm1 - i;
 			}

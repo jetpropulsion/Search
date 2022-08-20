@@ -17,14 +17,16 @@ namespace Search
 	/// </summary>
 	public class TurboBoyerMoore : BoyerMoore, ISearch
 	{
-		public TurboBoyerMoore(ReadOnlySpan<byte> pattern) : base(pattern)
+		public TurboBoyerMoore() : base()
 		{
 
 		}
 
-		public override void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
+		public override void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
 		{
 			//Searching
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> buffer = bufferMemory.Span; 
 			int m = pattern.Length;
 			int n = buffer.Length;
 

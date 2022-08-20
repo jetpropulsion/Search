@@ -10,8 +10,8 @@ namespace Search.Interfaces
     {
         //user will received a call to specified Found delegate; if user code returns false, search will be aborted
         delegate bool Found(int offset);
-    		void Init(ReadOnlySpan<byte> pattern);
-				void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, Found found);
+    		void Init(ReadOnlyMemory<byte> patternMemory);
+				void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, Found found);
 
     };  //END: public interface ISearch
 

@@ -11,8 +11,9 @@ namespace Search.Common
 	{
 		protected int[] Suffixes;
 
-		public SuffixesBase(ReadOnlySpan<byte> pattern)
+		public SuffixesBase(ReadOnlyMemory<byte> patternMemory)
 		{
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
 			int m = pattern.Length;
 
 			//Allocate

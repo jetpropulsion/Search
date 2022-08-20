@@ -22,19 +22,21 @@ namespace Search
 		protected GoodSuffixesBoyerMoore GoodSuffixes;
 		protected BadCharsZsuTakaoka BadChars;
 
-		public ZsuTakaoka(ReadOnlySpan<byte> pattern)
+		public ZsuTakaoka()
 		{
-			this.Init(pattern);
 		}
-		public void Init(ReadOnlySpan<byte> pattern)
+		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
 		{
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(pattern); 
-			this.BadChars = new BadCharsZsuTakaoka(pattern);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsZsuTakaoka(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
+		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
 		{
 			//Searching
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> buffer = bufferMemory.Span;
+
 			int m = pattern.Length;
 			int n = buffer.Length;
 
@@ -46,18 +48,6 @@ namespace Search
 			while (j <= n - m)
 			{
 				int i = mm1;
-				/*
-					The following while loop was originally
-					written as follows:
-
-						while( (x[i] == y[i + j])  && (i >= 0) )
-						{
-							--i;
-						}
-
-					This is something that I've changed, in order
-					to be able to check indices before any comparison.
-				*/
 				while (((uint)i < (uint)m) && (pattern[i] == buffer[i + j]))
 				{
 					--i;

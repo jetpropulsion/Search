@@ -18,17 +18,19 @@ namespace Search
 	{
 		protected BadCharsBoyerMoore BadChars;
 
-		public Raita(ReadOnlySpan<byte> pattern)
+		public Raita()
 		{
-			this.Init(pattern);
 		}
-		public void Init(ReadOnlySpan<byte> pattern)
+		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
 		{
-			this.BadChars = new BadCharsBoyerMoore(pattern);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlySpan<byte> pattern, ReadOnlySpan<byte> buffer, int offset, ISearch.Found found)
+		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
 		{
+			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> buffer = bufferMemory.Span;
+
 			//Searching
 			int j = offset;
 			int m = pattern.Length;
