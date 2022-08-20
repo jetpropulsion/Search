@@ -21,13 +21,16 @@ namespace Search
 		{
 
 		}
+		public TurboBoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		{
+		}
 
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;

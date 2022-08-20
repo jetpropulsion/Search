@@ -20,11 +20,14 @@ namespace Search
 		public Horspool() : base()
 		{
 		}
+		public Horspool(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		{
+		}
 
 		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
 			base.Init(patternMemory, onFound);
-			this.BadChars = new BadCharsBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
@@ -40,7 +43,7 @@ namespace Search
 		{
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;

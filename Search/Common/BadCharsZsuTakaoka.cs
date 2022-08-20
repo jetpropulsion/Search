@@ -12,7 +12,7 @@ namespace Search.Common
 	public class BadCharsZsuTakaoka
 	{
 		protected int[,] BadChars;
-		public BadCharsZsuTakaoka(ReadOnlyMemory<byte> patternMemory)
+		public BadCharsZsuTakaoka(ReadOnlySpan<byte> pattern)
 		{
 			const int MaxAlphabetSize = 256;
 
@@ -20,7 +20,6 @@ namespace Search.Common
 			this.BadChars = new int[MaxAlphabetSize, MaxAlphabetSize];
 
 			//Init
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
 			int m = pattern.Length;
 			int mm1 = m - 1;
 

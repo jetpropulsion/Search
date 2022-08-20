@@ -10,10 +10,8 @@ namespace Search.Common
 	public class GoodSuffixesBoyerMoore : SuffixesBase
 	{
 		protected int[] GoodSuffixes;
-		public GoodSuffixesBoyerMoore(ReadOnlyMemory<byte> patternMemory) : base(patternMemory)
+		public GoodSuffixesBoyerMoore(ReadOnlySpan<byte> pattern) : base(pattern)
 		{
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
-
 			int m = pattern.Length;
 
 			this.GoodSuffixes = new int[m];

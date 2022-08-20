@@ -21,11 +21,14 @@ namespace Search
 		public BoyerMoore() : base()
 		{
 		}
+		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		{
+		}
 		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
 			base.Init(patternMemory, onFound);
-			this.BadChars = new BadCharsBoyerMoore(patternMemory);
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
@@ -46,7 +49,7 @@ namespace Search
 			this.Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int j = offset;

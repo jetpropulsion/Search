@@ -24,8 +24,7 @@ namespace SearchTest
 		public void TestBoyerMoore()
 		{
 			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestBoyerMoore)}");
-			ISearch search = new Search.BoyerMoore();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			ISearch search = new Search.BoyerMoore(patternMemory, (int offset) => DisplayOffset(offset));
 			search.Search(bufferMemory, 0);
 		}
 
@@ -34,8 +33,7 @@ namespace SearchTest
 		public void TestTurboBoyerMoore()
 		{
 			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestTurboBoyerMoore)}");
-			ISearch search = new Search.TurboBoyerMoore();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			ISearch search = new Search.TurboBoyerMoore(patternMemory, (int offset) => DisplayOffset(offset));
 			search.Search(bufferMemory, 0);
 		}
 
@@ -44,8 +42,7 @@ namespace SearchTest
 		public void TestZsuTakaoka()
 		{
 			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestZsuTakaoka)}");
-			ISearch search = new Search.ZsuTakaoka();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			ISearch search = new Search.ZsuTakaoka(patternMemory, (int offset) => DisplayOffset(offset));
 			search.Search(bufferMemory, 0);
 		}
 
@@ -54,8 +51,7 @@ namespace SearchTest
 		public void TestHorspool()
 		{
 			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestHorspool)}");
-			ISearch search = new Search.Horspool();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			ISearch search = new Search.Horspool(patternMemory, (int offset) => DisplayOffset(offset));
 			search.Search(bufferMemory, 0);
 		}
 
@@ -64,20 +60,19 @@ namespace SearchTest
 		public void TestRaita()
 		{
 			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestRaita)}");
-			ISearch search = new Search.Raita();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			ISearch search = new Search.Raita(patternMemory, (int offset) => DisplayOffset(offset));
 			search.Search(bufferMemory, 0);
 		}
 
-		[TestMethod]
-		[Timeout(15000)]
-		public void TestQuickSearch()
-		{
-			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestQuickSearch)}");
-			ISearch search = new Search.QuickSearch();
-			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
-			search.Search(bufferMemory, 0);
-		}
+		//[TestMethod]
+		//[Timeout(15000)]
+		//public void TestQuickSearch()
+		//{
+		//	Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestQuickSearch)}");
+		//	ISearch search = new Search.QuickSearch();
+		//	search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+		//	search.Search(bufferMemory, 0);
+		//}
 
 		/*****************************************************************************************************************
 		*******************************************************************************************************************
@@ -102,7 +97,7 @@ namespace SearchTest
 			Assembly asm = typeof(Search.Interfaces.ISearch).Assembly;
 			if (asm == null)
 			{
-				throw new ApplicationException("Something wrong happened.");
+				throw new ApplicationException("Something wrong has happened.");
 			}
 
 			Dictionary<string, List<int>> dict = new Dictionary<string, List<int>>();

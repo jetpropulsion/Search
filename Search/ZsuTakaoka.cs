@@ -25,11 +25,14 @@ namespace Search
 		public ZsuTakaoka() : base()
 		{
 		}
+		public ZsuTakaoka(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		{
+		}
 		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
 			base.Init(patternMemory, onFound);
-			this.BadChars = new BadCharsZsuTakaoka(patternMemory);
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsZsuTakaoka(patternMemory.Span);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
@@ -50,7 +53,7 @@ namespace Search
 			//Searching
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;

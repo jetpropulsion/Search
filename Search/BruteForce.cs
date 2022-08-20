@@ -14,12 +14,15 @@ namespace Search
 		public BruteForce() : base()
 		{
 		}
+		public BruteForce(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		{
+		}
 
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching

@@ -21,14 +21,13 @@ namespace Search
 		public Raita() : base()
 		{
 		}
-		public Raita(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		public Raita(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
 		{
-			(this as ISearch).Init(patternMemory, onFound);
 		}
 		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
 			base.Init(patternMemory, onFound);
-			this.BadChars = new BadCharsBoyerMoore(patternMemory);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
@@ -43,7 +42,7 @@ namespace Search
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			base.Validate();
-			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching
