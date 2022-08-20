@@ -1,4 +1,5 @@
-﻿using Search.Interfaces;
+﻿using Search.Common;
+using Search.Interfaces;
 
 using System;
 using System.Collections.Generic;
@@ -8,19 +9,17 @@ using System.Threading.Tasks;
 
 namespace Search
 {
-	public class BruteForce : ISearch
+	public class BruteForce : SearchBase
 	{
-		public BruteForce()
+		public BruteForce() : base()
 		{
 		}
 
-		void ISearch.Init(ReadOnlyMemory<byte> patternMemory)
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-		}
+			this.Validate();
 
-		void ISearch.Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
-		{
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching
@@ -37,7 +36,7 @@ namespace Search
 				}
 				if (i >= m)
 				{
-					if(!found(j))
+					if(!base.OnFound!(j))
 					{
 						return;
 					}

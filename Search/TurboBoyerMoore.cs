@@ -22,11 +22,14 @@ namespace Search
 
 		}
 
-		public override void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
+			this.Validate();
+
 			//Searching
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
-			ReadOnlySpan<byte> buffer = bufferMemory.Span; 
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> buffer = bufferMemory.Span;
+
 			int m = pattern.Length;
 			int n = buffer.Length;
 
@@ -56,20 +59,20 @@ namespace Search
 				}
 				if (i < 0)
 				{
-					if(!found(j))
+					if(!this.OnFound!(j))
 					{
 						return;
 					}
-					shift = this.GoodSuffixes[0];
+					shift = this.GoodSuffixes![0];
 					u = m - shift;
 				}
 				else
 				{
 					v = mm1 - i;
 					turboShift = u - v;
-					bcShift = this.BadChars[ buffer[i + j] ] - mp1 + i;
+					bcShift = this.BadChars![ buffer[i + j] ] - mp1 + i;
 					shift = Math.Max(turboShift, bcShift);
-					shift = Math.Max(shift, this.GoodSuffixes[i]);
+					shift = Math.Max(shift, this.GoodSuffixes![i]);
 					if (shift == this.GoodSuffixes[i])
 					{
 						u = Math.Min(m - shift, v);
@@ -86,7 +89,6 @@ namespace Search
 				j += shift;
 			}
 		}
-	};	//END: class TurboBoyerMoore
-};	//END: namespace Search
+	}};	//END: namespace Search
 
 

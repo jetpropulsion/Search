@@ -11,21 +11,33 @@ using System.Threading.Tasks;
 
 namespace Search
 {
-	public class QuickSearch : ISearch
+	public class QuickSearch : SearchBase
 	{
-		BadCharsBoyerMoore BadChars;
-		public QuickSearch()
+		protected BadCharsBoyerMoore? BadChars = null;
+		public QuickSearch() : base()
 		{
 		}
 
-		void ISearch.Init(ReadOnlyMemory<byte> patternMemory)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
+			base.Init(patternMemory, onFound);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory);
 		}
 
-		void ISearch.Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Validate()
 		{
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			base.Validate();
+
+			if (this.BadChars == null)
+			{
+				throw new ArgumentNullException(nameof(this.BadChars));
+			}
+		}
+
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		{
+			this.Validate();
+			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -39,12 +51,12 @@ namespace Search
 			{
 				if(pattern.SequenceEqual(buffer[j..(j + m)]))
 				{
-					if (!found(j))
+					if (!base.OnFound!(j))
 					{
 						return;
 					}
 				}
-				j += this.BadChars[buffer[j + m - 1]];
+				j += this.BadChars![buffer[j + m - 1]];
 			}
 		}
 	}

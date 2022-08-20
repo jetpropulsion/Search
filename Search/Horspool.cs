@@ -5,9 +5,9 @@ using Search.Common;
 
 namespace Search
 {
-	public class Horspool : ISearch
+	public class Horspool : SearchBase
 	{
-		protected BadCharsBoyerMoore BadChars;
+		protected BadCharsBoyerMoore? BadChars = null;
 
 		/// <summary>
 		//	name:										Horspool algorithm
@@ -17,22 +17,30 @@ namespace Search
 		//	worst case:							n*n text character comparisons (quadratic worst case)
 		//	ref:										HORSPOOL R.N., 1980, Practical fast searching in strings, Software - Practice & Experience, 10(6):501-506.
 		/// </summary>
-		public Horspool()
+		public Horspool() : base()
 		{
 		}
 
-		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
+			base.Init(patternMemory, onFound);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Validate()
 		{
-			//Initialize
-			this.Init(patternMemory);
+			base.Validate();
 
-			//Searching
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			if (this.BadChars == null)
+			{
+				throw new ArgumentNullException(nameof(this.BadChars));
+			}
+		}
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		{
+			this.Validate();
+
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -47,15 +55,14 @@ namespace Search
 				byte c = buffer[j + mm1];
 				if ((pattern[mm1] == c) && pattern.SequenceEqual(buffer[j..(j + m)]))
 				{
-					if(!found(j))
+					if(!base.OnFound!(j))
 					{
 						return;
 					}
 				}
-				j += this.BadChars[c];
+				j += this.BadChars![c];
 			}
 		}
-	};  //END: public class Horspool
-
+	}
 };  //END: namespace Search
 

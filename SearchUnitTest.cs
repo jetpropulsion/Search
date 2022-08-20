@@ -13,88 +13,70 @@ namespace SearchTest
 		static Memory<byte> patternMemory = Encoding.UTF8.GetBytes(pattern).AsMemory();
 		static Memory<byte> bufferMemory = Encoding.UTF8.GetBytes(buffer).AsMemory();
 
+		public static bool DisplayOffset(int offset)
+		{
+			Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
+			return true;
+		}
+
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestBoyerMoore()
 		{
-			Trace.WriteLine($"{nameof(TestBoyerMoore)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestBoyerMoore)}");
 			ISearch search = new Search.BoyerMoore();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestTurboBoyerMoore()
 		{
-			Trace.WriteLine($"{nameof(TestTurboBoyerMoore)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestTurboBoyerMoore)}");
 			ISearch search = new Search.TurboBoyerMoore();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestZsuTakaoka()
 		{
-			Trace.WriteLine($"{nameof(TestZsuTakaoka)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestZsuTakaoka)}");
 			ISearch search = new Search.ZsuTakaoka();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestHorspool()
 		{
-			Trace.WriteLine($"{nameof(TestHorspool)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestHorspool)}");
 			ISearch search = new Search.Horspool();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestRaita()
 		{
-			Trace.WriteLine($"{nameof(TestRaita)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestRaita)}");
 			ISearch search = new Search.Raita();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		[TestMethod]
 		[Timeout(15000)]
 		public void TestQuickSearch()
 		{
-			Trace.WriteLine($"{nameof(TestQuickSearch)} [{DateTimeOffset.Now.ToString("O")}]");
+			Trace.WriteLine($"[{DateTimeOffset.Now.ToString("O")}] {nameof(TestQuickSearch)}");
 			ISearch search = new Search.QuickSearch();
-			search.Init(patternMemory);
-			search.Search(patternMemory, bufferMemory, 0, (int offset) =>
-			{
-				Trace.WriteLine($"Found \"{pattern}\" at offset: {offset}");
-				return true;
-			});
+			search.Init(patternMemory, (int offset) => DisplayOffset(offset));
+			search.Search(bufferMemory, 0);
 		}
 
 		/*****************************************************************************************************************
@@ -114,7 +96,7 @@ namespace SearchTest
 		 *****************************************************************************************************************/
 
 		[TestMethod]
-		[Timeout(30000)]
+		[Timeout(60000)]
 		public void TestAllDerivingFromISearch()
 		{
 			Assembly asm = typeof(Search.Interfaces.ISearch).Assembly;
@@ -136,23 +118,27 @@ namespace SearchTest
 					throw new ApplicationException("unexpected type behavior");
 				}
 				string algorithm = ti.FullName!;
+				if(algorithm.Equals("Search.Common.SearchBase"))
+				{
+					continue;
+				}
 				//string sep = string.Concat(Enumerable.Repeat<char>('-', Console.WindowWidth - 1));
 
 				//Trace.WriteLine($"{algorithm}");
 				Assembly assembly = ti.Assembly;
 				ISearch genericSearch = (ISearch)(assembly.CreateInstance(algorithm, false) ?? throw new ApplicationException(algorithm));
-				genericSearch.Init(patternMemory);
+				genericSearch.Init(patternMemory, (int offset) => { dict[algorithm].Add(offset); return true; });
 				if(!dict.ContainsKey(algorithm))
 				{
 					dict.Add(algorithm, new List<int>());
 				}
-				genericSearch.Search(patternMemory, bufferMemory, 0, (int offset) => { dict[algorithm].Add(offset); return true; });
+				genericSearch.Search(bufferMemory, 0);
 			}
 			
 			List<int> expectedOffsets = new List<int>();
 			ISearch referenceSearch = new Search.BruteForce();
-			referenceSearch.Init(patternMemory);
-			referenceSearch.Search(patternMemory, bufferMemory, 0, (int offset) => { expectedOffsets.Add(offset); return true; });
+			referenceSearch.Init(patternMemory, (int offset) => { expectedOffsets.Add(offset); return true; });
+			referenceSearch.Search(bufferMemory, 0);
 			expectedOffsets.Sort();
 			for (int i = 0; i < expectedOffsets.Count; ++i)
 			{

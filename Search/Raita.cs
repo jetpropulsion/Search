@@ -14,21 +14,36 @@ namespace Search
 	//	worst case:							3n text character comparisons (when searching non-periodic pattern)
 	//	ref:										BOYER R.S., MOORE J.S., 1977, A fast string searching algorithm. Communications of the ACM. 20:762-772.
 	/// </summary>
-	public class Raita : ISearch
+	public class Raita : SearchBase
 	{
-		protected BadCharsBoyerMoore BadChars;
+		protected BadCharsBoyerMoore? BadChars = null;
 
-		public Raita()
+		public Raita() : base()
 		{
 		}
-		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
+		public Raita(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
+			(this as ISearch).Init(patternMemory, onFound);
+		}
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		{
+			base.Init(patternMemory, onFound);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Validate()
 		{
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			base.Validate();
+			if (this.BadChars == null)
+			{
+				throw new ArgumentNullException(nameof(this.BadChars));
+			}
+		}
+
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		{
+			base.Validate();
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching
@@ -55,16 +70,15 @@ namespace Search
 						patternCut.SequenceEqual(buffer[(j + 1)..(j + mm2)])
 				)
 				{
-					if(!found(j))
+					if(!this.OnFound!(j))
 					{
 						return;
 					}
 				}
 
-				j += this.BadChars[c];
+				j += this.BadChars![c];
 			}
 		}
-	};  //END: public class Raita
-
+	}
 };  //END: namespace Search
 

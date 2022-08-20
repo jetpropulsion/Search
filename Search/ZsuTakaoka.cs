@@ -17,24 +17,40 @@ namespace Search
 	//	worst case:							n*n text character comparisons (quadratic worst case)
 	//	ref:										ZHU R.F., TAKAOKA T., 1987, On improving the average case of the Boyer-Moore string matching algorithm, Journal of Information Processing 10(3):173-177.
 	/// </summary>
-	public class ZsuTakaoka : ISearch
+	public class ZsuTakaoka : SearchBase
 	{
-		protected GoodSuffixesBoyerMoore GoodSuffixes;
-		protected BadCharsZsuTakaoka BadChars;
+		protected GoodSuffixesBoyerMoore? GoodSuffixes = null;
+		protected BadCharsZsuTakaoka? BadChars = null;
 
-		public ZsuTakaoka()
+		public ZsuTakaoka() : base()
 		{
 		}
-		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			base.Init(patternMemory, onFound);
 			this.BadChars = new BadCharsZsuTakaoka(patternMemory);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Validate()
+		{
+			base.Validate();
+
+			if (this.BadChars == null)
+			{
+				throw new ArgumentNullException(nameof(this.BadChars));
+			}
+			if (this.GoodSuffixes == null)
+			{
+				throw new ArgumentNullException(nameof(this.GoodSuffixes));
+			}
+		}
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			//Searching
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			this.Validate();
+
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -54,18 +70,17 @@ namespace Search
 				}
 				if (i < 0)
 				{
-					if(!found(j))
+					if(!base.OnFound!(j))
 					{
 						return;
 					}
-					j += this.GoodSuffixes[0];
+					j += this.GoodSuffixes![0];
 				}
 				else
 				{
-					j += Math.Max(this.GoodSuffixes[i], this.BadChars[ buffer[j + mm2], buffer[j + mm1] ]);
+					j += Math.Max(this.GoodSuffixes![i], this.BadChars![ buffer[j + mm2], buffer[j + mm1] ]);
 				}
 			}
 
 		}
-	};  //END: class ZsuTakaoka
-};  //END: namespace Search
+	}};  //END: namespace Search

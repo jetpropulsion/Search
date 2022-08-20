@@ -13,24 +13,40 @@ namespace Search
 	//	worst case:							3n text character comparisons (when searching non-periodic pattern)
 	//	ref:										BOYER R.S., MOORE J.S., 1977, A fast string searching algorithm. Communications of the ACM. 20:762-772.
 	/// </summary>
-	public class BoyerMoore : ISearch
+	public class BoyerMoore : SearchBase
 	{
-		protected BadCharsBoyerMoore BadChars;
-		protected GoodSuffixesBoyerMoore GoodSuffixes;
+		protected BadCharsBoyerMoore? BadChars = null;
+		protected GoodSuffixesBoyerMoore? GoodSuffixes = null;
 
-		public BoyerMoore()
+		public BoyerMoore() : base()
 		{
 		}
-		public virtual void Init(ReadOnlyMemory<byte> patternMemory)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
 		{
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
+			base.Init(patternMemory, onFound);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory);
 		}
 
-		public virtual void Search(ReadOnlyMemory<byte> patternMemory, ReadOnlyMemory<byte> bufferMemory, int offset, ISearch.Found found)
+		public override void Validate()
 		{
+			base.Validate();
+
+			if (this.BadChars == null)
+			{
+				throw new ArgumentNullException(nameof(this.BadChars));
+			}
+			if (this.GoodSuffixes == null)
+			{
+				throw new ArgumentNullException(nameof(this.GoodSuffixes));
+			}
+		}
+		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		{
+			this.Validate();
+
 			//Searching
-			ReadOnlySpan<byte> pattern = patternMemory.Span;
+			ReadOnlySpan<byte> pattern = PatternMemory!.Value.Span;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int j = offset;
@@ -48,20 +64,19 @@ namespace Search
 				}
 				if(i < 0)
 				{
-					if(!found(j))
+					if(!this.OnFound!(j))
 					{
 						return;
 					}
 
-					j += this.GoodSuffixes[0];
+					j += this.GoodSuffixes![0];
 				}
 				else
 				{
-					j += Math.Max(this.GoodSuffixes[i], this.BadChars[ buffer[i + j] ] - mp1 + i);
+					j += Math.Max(this.GoodSuffixes![i], this.BadChars![ buffer[i + j] ] - mp1 + i);
 				}
 			}
 		}
-	};  //END: public class BoyerMoore
-
+	}
 };  //END: namespace Search
 
