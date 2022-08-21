@@ -40,6 +40,7 @@ namespace Search
 		{
 			this.Validate();
 
+			//Searching
 			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 

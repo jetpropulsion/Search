@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using Search.Interfaces;
@@ -17,11 +19,11 @@ namespace SearchTest
 
 		static readonly ConcurrentDictionary<Type, List<int>> resultsMap = new ConcurrentDictionary<Type, List<int>>();
 
-		public static List<int> addOffset(Type type, int offset)
+		public static List<int> createOffsets(Type type, int offset)
 		{
 			return new List<int>() { offset };
 		}
-		public static List<int> updateOffsets(Type type, List<int> offsets, int offset)
+		public static List<int> appendOffsets(Type type, List<int> offsets, int offset)
 		{
 			int[] result = new int[offsets.Count + 1];
 			offsets.CopyTo(result, 0);
@@ -30,9 +32,9 @@ namespace SearchTest
 		}
 		public static bool DisplayOffset(int offset, Type caller)
 		{
-			resultsMap.AddOrUpdate<int>(caller, addOffset, updateOffsets, offset);
+			resultsMap.AddOrUpdate<int>(caller, createOffsets, appendOffsets, offset);
 
-			Trace.WriteLine($"({caller.FullName}) has found \"{pattern}\" at offset: {offset}");
+			//Trace.WriteLine($"({caller.FullName}) has found \"{pattern}\" at offset: {offset}");
 			return true;
 		}
 
@@ -112,8 +114,20 @@ namespace SearchTest
 		********************************************************************************************************************
 		 *****************************************************************************************************************/
 
+		public static int GetRandom(int min, int max) => Random.Shared.Next(min, max);
+
+		public struct Stats
+		{
+			public List<int> Offsets = new List<int>();
+			public TimeSpan InitTime = TimeSpan.Zero;
+			public TimeSpan SearchTime = TimeSpan.Zero; //{ get; set; }
+			public Stats()
+			{
+			}
+		};
+
 		[TestMethod]
-		[Timeout(60000)]
+		//[Timeout(120000)]
 		public void Test_All_ISearch_Derivates()
 		{
 			Assembly asm = typeof(Search.Interfaces.ISearch).Assembly;
@@ -122,66 +136,127 @@ namespace SearchTest
 				throw new ApplicationException("Something wrong has happened.");
 			}
 
-			Dictionary<string, List<int>> dict = new Dictionary<string, List<int>>();
-			foreach (TypeInfo ti in (TypeInfo[])asm.DefinedTypes)
-			{
-				bool hasMetric = ti.GetInterfaces().Contains(typeof(Search.Interfaces.ISearch));
-				if (!ti.IsClass || ti.IsAbstract || !hasMetric)
-				{
-					continue;
-				}
-				if(string.IsNullOrWhiteSpace(ti.FullName))
-				{
-					throw new ApplicationException("unexpected type behavior");
-				}
-				string algorithm = ti.FullName!;
-				if(algorithm.Equals("Search.Common.SearchBase"))
-				{
-					continue;
-				}
-				//string sep = string.Concat(Enumerable.Repeat<char>('-', Console.WindowWidth - 1));
+			string single = string.Concat(Enumerable.Repeat<char>('-', 80 - 1));
 
-				//Trace.WriteLine($"{algorithm}");
-				Assembly assembly = ti.Assembly;
-				ISearch genericSearch = (ISearch)(assembly.CreateInstance(algorithm, false) ?? throw new ApplicationException(algorithm));
-				genericSearch.Init(patternMemory, (int offset, Type caller) => { dict[algorithm].Add(offset); return true; });
-				if(!dict.ContainsKey(algorithm))
-				{
-					dict.Add(algorithm, new List<int>());
-				}
-				genericSearch.Search(bufferMemory, 0);
-			}
-			
-			List<int> referenceOffsets = new List<int>();
-			ISearch referenceSearch = new Search.BruteForce();
-			referenceSearch.Init(patternMemory, (int offset, Type caller) => { referenceOffsets.Add(offset); return true; });
-			referenceSearch.Search(bufferMemory, 0);
-			referenceOffsets.Sort();
-			for (int i = 0; i < referenceOffsets.Count; ++i)
+			int maxTestIterations = 20;
+			Dictionary<Type, Stats> dict = new();
+			for (int testIteration = 1; testIteration <= maxTestIterations; ++testIteration)
 			{
-				Trace.WriteLine($"Expected match at position {i}: {referenceOffsets[i]}");
-			}
+				dict.Keys.ToList().ForEach(k => dict[k].Offsets.Clear());
 
-			int discrepancies = 0;
-			foreach (string key in dict.Keys.OrderBy(x => x))
-			{
-				List<int> offsets = dict[key];
-				offsets.Sort();
-				if(offsets.Count != referenceOffsets.Count || !offsets.SequenceEqual(referenceOffsets))
+				int minPatternSize = 3;
+				int maxPatternSize = 273;
+				int patternSize = GetRandom(minPatternSize, maxPatternSize);
+				int minBufferSize = 1048576;
+				int maxBufferSize = 1048576 * 256;
+				int bufferSize = GetRandom(minBufferSize, maxBufferSize);
+
+				byte[] testPattern = new byte[patternSize];
+				Random.Shared.NextBytes(testPattern);
+				byte[] testBuffer = new byte[bufferSize];
+				Array.Fill<byte>(testBuffer, 0, 0, bufferSize);
+
+				Trace.WriteLine($"Generator: iteration={testIteration}, patternSize={patternSize}, bufferSize={bufferSize}");
+
+				int testOffset = 0;
+				List<int> testOffsets = new ();
+				int lastOffset = bufferSize - patternSize;
+				for (int i = 0; i < 1000 && testOffset + patternSize < lastOffset; ++i)
 				{
-					++discrepancies;
-					Trace.WriteLine($"results of the algorithm run \"{key}\" differs from brute force");
-					for (int i = 0; i < offsets.Count; ++i)
+					int offset = Random.Shared.Next(testOffset, Math.Min(testOffset + (bufferSize / patternSize), lastOffset));
+					testOffset = offset + patternSize;
+					testOffsets.Add(offset);
+					testPattern.CopyTo(testBuffer, offset);
+
+					//Trace.WriteLine($"Generator: inserting at {offset}");
+				}
+
+				Stopwatch initWatch = new();
+				Stopwatch searchWatch = new();
+				foreach (Type type in ((TypeInfo[])asm.DefinedTypes).Select(t => t.UnderlyingSystemType))
+				{
+					bool hasMetric = type.GetInterfaces().Contains(typeof(Search.Interfaces.ISearch));
+					if (!type.IsClass || type.IsAbstract || !hasMetric)
 					{
-						Trace.WriteLine($"algorithm \"{key}\" match at position {i}: {offsets[i]}");
+						continue;
+					}
+					if (typeof(Search.Common.SearchBase).Equals(type))
+					{
+						continue;
+					}
+
+					if (!dict.ContainsKey(type)) dict.Add(type, new Stats());
+					Stats stat = dict[type];
+
+					if (string.IsNullOrWhiteSpace(type.FullName)) throw new ApplicationException("unexpected type behavior");
+
+					Assembly assembly = type.Assembly;
+					ISearch genericSearch = (ISearch)(assembly.CreateInstance(type.FullName, false) ?? throw new ApplicationException(type.FullName));
+
+					//Trace.WriteLine($"Running \"{type.FullName}\"");
+
+					initWatch.Restart();
+					genericSearch.Init(testPattern, (int offset, Type caller) => { dict[caller].Offsets.Add(offset); return true; });
+					initWatch.Stop();
+					TimeSpan elapsedInit = initWatch.Elapsed;
+					stat.InitTime += elapsedInit;
+
+
+					searchWatch.Restart();
+					genericSearch.Search(testBuffer, 0);
+					searchWatch.Stop();
+					TimeSpan elapsedSearch = searchWatch.Elapsed;
+					stat.SearchTime += elapsedSearch;
+
+					dict[type] = stat;
+				}
+
+				//foreach(Type type in dict.Keys.OrderBy(t => t.FullName, StringComparer.Ordinal))
+				//{
+				//	Trace.WriteLine($"Algorithm \"{type.FullName}\" - Init: {dict[type].InitTime.TotalMilliseconds:F4} ms, Search: {dict[type].SearchTime.TotalMilliseconds:F4} ms");
+				//}
+				//Trace.WriteLine(single);
+
+				List<int> referenceOffsets = new List<int>();
+				ISearch referenceSearch = new Search.BruteForce();
+				referenceSearch.Init(testPattern, (int offset, Type caller) => { referenceOffsets.Add(offset); return true; });
+				referenceSearch.Search(testBuffer, 0);
+				referenceOffsets.Sort();
+
+				//for (int i = 0; i < referenceOffsets.Count; ++i)
+				//{
+				//	Trace.WriteLine($"Expected match at position {i}: {referenceOffsets[i]}");
+				//}
+				Assert.IsTrue(testOffsets.Count == referenceOffsets.Count && testOffsets.SequenceEqual(referenceOffsets));
+
+				int discrepancies = 0;
+				foreach (Type key in dict.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal))
+				{
+					List<int> offsets = dict[key].Offsets;
+					offsets.Sort();
+					if(offsets.Count != referenceOffsets.Count || !offsets.SequenceEqual(referenceOffsets))
+					{
+						++discrepancies;
+						Trace.WriteLine($"results of the algorithm run \"{key}\" differs from brute force");
+						for (int i = 0; i < offsets.Count; ++i)
+						{
+							Trace.WriteLine($"algorithm \"{key.FullName}\" match at position {i}: {offsets[i]}");
+						}
 					}
 				}
-			}
-			if(discrepancies != 0)
+				if(discrepancies != 0)
+				{
+					Debug.WriteLine($"Total {discrepancies} discrepancies.");
+					Assert.Fail();
+				}
+			} //END: for(int testIteration
+
+			foreach (Type type in dict.Keys.OrderBy(t => t.FullName, StringComparer.Ordinal))
 			{
-				Debug.WriteLine($"Total {discrepancies} discrepancies.");
-				Assert.Fail();
+				Trace.WriteLine($"Algorithm \"{type.FullName}\" - Init: {dict[type].InitTime.TotalMilliseconds:F4} ms, Search: {dict[type].SearchTime.TotalMilliseconds:F4} ms");
 			}
+			Trace.WriteLine(single);
+
 		}
 
 	};	//END: class SearchUnitTest

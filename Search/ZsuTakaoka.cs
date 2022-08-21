@@ -44,9 +44,9 @@ namespace Search
 		}
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-			//Searching
 			this.Validate();
 
+			//Searching
 			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
