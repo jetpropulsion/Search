@@ -10,13 +10,11 @@ namespace Search.Common
 	//Used by: Boyer-Moore and derivatives (Turbo BM, Tuned BM, Horspool, Raita, Zsu-Takaoka)
 	public class BadCharsBoyerMoore
 	{
-		protected int[] BadChars;
+		public readonly int[] BadChars;
 		public BadCharsBoyerMoore(ReadOnlySpan<byte> pattern)
 		{
-			const int MaxAlphabetSize = 256;
-
 			//Allocate
-			this.BadChars = new int[MaxAlphabetSize];
+			this.BadChars = new int[Search.Common.Constants.SearchAlphabetSize];
 
 			//Init
 			int m = pattern.Length;
@@ -34,18 +32,12 @@ namespace Search.Common
 		{
 			get
 			{
-				if (index < 0 || index > this.BadChars.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.BadChars.Length) throw new ArgumentOutOfRangeException("index");
 				return this.BadChars[index];
 			}
 			protected set
 			{
-				if (index < 0 || index > this.BadChars.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.BadChars.Length) throw new ArgumentOutOfRangeException("index");
 				this.BadChars[index] = value;
 			}
 		}

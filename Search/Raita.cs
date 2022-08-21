@@ -21,28 +21,25 @@ namespace Search
 		public Raita() : base()
 		{
 		}
-		public Raita(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public Raita(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
-			base.Init(patternMemory, onFound);
+			base.Init(patternMemory, patternMatched);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
 		{
 			base.Validate();
-			if (this.BadChars == null)
-			{
-				throw new ArgumentNullException(nameof(this.BadChars));
-			}
+			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
 		}
 
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			base.Validate();
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching
@@ -57,7 +54,7 @@ namespace Search
 			byte middle = pattern[mr1];
 			byte last = pattern[mm1];
 
-			ReadOnlySpan<byte> patternCut = pattern[1..mm2];
+			ReadOnlySpan<byte> innerPattern = pattern[1..mm2];
 
 			while (j <= n - m)
 			{
@@ -66,10 +63,10 @@ namespace Search
 				if ((last == c) &&
 						(middle == buffer[j + mr1]) &&
 						(first == buffer[j]) &&
-						patternCut.SequenceEqual(buffer[(j + 1)..(j + mm2)])
+						innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
 				)
 				{
-					if(!this.OnFound!(j))
+					if(!this.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

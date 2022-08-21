@@ -2,6 +2,7 @@
 using System.Text;
 using Search.Interfaces;
 using Search.Common;
+using System.Reflection;
 
 namespace Search
 {
@@ -15,18 +16,18 @@ namespace Search
 	/// </summary>
 	public class BoyerMoore : SearchBase
 	{
-		protected BadCharsBoyerMoore? BadChars = null;
-		protected GoodSuffixesBoyerMoore? GoodSuffixes = null;
+		public BadCharsBoyerMoore? BadChars { get; protected set; } = null;
+		public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
 
 		public BoyerMoore() : base()
 		{
 		}
-		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
-			base.Init(patternMemory, onFound);
+			base.Init(patternMemory, patternMatched);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
 			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
@@ -35,21 +36,16 @@ namespace Search
 		{
 			base.Validate();
 
-			if (this.BadChars == null)
-			{
-				throw new ArgumentNullException(nameof(this.BadChars));
-			}
-			if (this.GoodSuffixes == null)
-			{
-				throw new ArgumentNullException(nameof(this.GoodSuffixes));
-			}
+			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
+			if (this.GoodSuffixes == null) throw new ArgumentNullException(nameof(this.GoodSuffixes));
 		}
+
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int j = offset;
@@ -67,7 +63,7 @@ namespace Search
 				}
 				if(i < 0)
 				{
-					if(!this.OnFound!(j))
+					if (!this.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

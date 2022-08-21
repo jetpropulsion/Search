@@ -21,7 +21,7 @@ namespace Search
 		{
 
 		}
-		public TurboBoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public TurboBoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
 
@@ -30,7 +30,7 @@ namespace Search
 			this.Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -62,7 +62,7 @@ namespace Search
 				}
 				if (i < 0)
 				{
-					if(!this.OnFound!(j))
+					if(!this.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

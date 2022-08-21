@@ -9,7 +9,7 @@ namespace Search.Common
 	//In reference literature and/or implementation, "GoodSuffixesBase" is known as "bmGs"
 	public class GoodSuffixesBoyerMoore : SuffixesBase
 	{
-		protected int[] GoodSuffixes;
+		public readonly int[] GoodSuffixes;
 		public GoodSuffixesBoyerMoore(ReadOnlySpan<byte> pattern) : base(pattern)
 		{
 			int m = pattern.Length;
@@ -50,18 +50,12 @@ namespace Search.Common
 		{
 			get
 			{
-				if (index < 0 || index > this.GoodSuffixes.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.GoodSuffixes.Length) throw new ArgumentOutOfRangeException("index");
 				return this.GoodSuffixes[index];
 			}
 			protected set
 			{
-				if (index < 0 || index > this.GoodSuffixes.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.GoodSuffixes.Length) throw new ArgumentOutOfRangeException("index");
 				this.GoodSuffixes[index] = value;
 			}
 		}

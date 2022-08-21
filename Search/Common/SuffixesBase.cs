@@ -9,7 +9,7 @@ namespace Search.Common
 	//In reference literature and/or implementation, "SuffixesBase" is known as "suff"
 	public class SuffixesBase
 	{
-		protected int[] Suffixes;
+		public readonly int[] Suffixes;
 
 		public SuffixesBase(ReadOnlySpan<byte> pattern)
 		{
@@ -50,18 +50,12 @@ namespace Search.Common
 		{
 			get
 			{
-				if (index < 0 || index > this.Suffixes.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.Suffixes.Length) throw new ArgumentOutOfRangeException("index");
 				return this.Suffixes[index];
 			}
 			protected set
 			{
-				if (index < 0 || index > this.Suffixes.Length)
-				{
-					throw new ArgumentOutOfRangeException("index");
-				}
+				if (index < 0 || index > this.Suffixes.Length) throw new ArgumentOutOfRangeException("index");
 				this.Suffixes[index] = value;
 			}
 		}

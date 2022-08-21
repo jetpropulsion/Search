@@ -11,26 +11,25 @@ namespace Search.Common
 	//Used by: Zsu-Takaoka
 	public class BadCharsZsuTakaoka
 	{
-		protected int[,] BadChars;
+		public readonly int[,] BadChars;
 		public BadCharsZsuTakaoka(ReadOnlySpan<byte> pattern)
 		{
-			const int MaxAlphabetSize = 256;
-
+			const int maxAlphabet = Search.Common.Constants.SearchAlphabetSize;
 			//Allocate
-			this.BadChars = new int[MaxAlphabetSize, MaxAlphabetSize];
+			this.BadChars = new int[maxAlphabet, maxAlphabet];
 
 			//Init
 			int m = pattern.Length;
 			int mm1 = m - 1;
 
-			for (int i = 0; i < MaxAlphabetSize; ++i)
+			for (int i = 0; i < maxAlphabet; ++i)
 			{
-				for (int j = 0; j < MaxAlphabetSize; ++j)
+				for (int j = 0; j < maxAlphabet; ++j)
 				{
 					this.BadChars[i, j] = m;
 				}
 			}
-			for (int i = 0; i < MaxAlphabetSize; ++i)
+			for (int i = 0; i < maxAlphabet; ++i)
 			{
 				this.BadChars[i, pattern[0]] = mm1;
 			}
@@ -44,14 +43,8 @@ namespace Search.Common
 		{
 			get
 			{
-				if (x < 0 || x > this.BadChars.GetLength(0))
-				{
-					throw new ArgumentOutOfRangeException("x");
-				}
-				if (y < 0 || y > this.BadChars.GetLength(1))
-				{
-					throw new ArgumentOutOfRangeException("y");
-				}
+				if (x < 0 || x > this.BadChars.GetLength(0)) throw new ArgumentOutOfRangeException("x");
+				if (y < 0 || y > this.BadChars.GetLength(1)) throw new ArgumentOutOfRangeException("y");
 				return this.BadChars[x, y];
 			}
 		}

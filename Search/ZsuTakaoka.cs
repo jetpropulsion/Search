@@ -19,18 +19,18 @@ namespace Search
 	/// </summary>
 	public class ZsuTakaoka : SearchBase
 	{
-		protected GoodSuffixesBoyerMoore? GoodSuffixes = null;
-		protected BadCharsZsuTakaoka? BadChars = null;
+		public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
+		public BadCharsZsuTakaoka? BadChars { get; protected set; } = null;
 
 		public ZsuTakaoka() : base()
 		{
 		}
-		public ZsuTakaoka(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public ZsuTakaoka(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
-			base.Init(patternMemory, onFound);
+			base.Init(patternMemory, patternMatched);
 			this.BadChars = new BadCharsZsuTakaoka(patternMemory.Span);
 			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
@@ -39,21 +39,15 @@ namespace Search
 		{
 			base.Validate();
 
-			if (this.BadChars == null)
-			{
-				throw new ArgumentNullException(nameof(this.BadChars));
-			}
-			if (this.GoodSuffixes == null)
-			{
-				throw new ArgumentNullException(nameof(this.GoodSuffixes));
-			}
+			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
+			if (this.GoodSuffixes == null) throw new ArgumentNullException(nameof(this.GoodSuffixes));
 		}
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			//Searching
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -63,7 +57,7 @@ namespace Search
 			int mm2 = m - 2;
 
 			//Searching
-			int j = 0;
+			int j = offset;
 			while (j <= n - m)
 			{
 				int i = mm1;
@@ -73,7 +67,7 @@ namespace Search
 				}
 				if (i < 0)
 				{
-					if(!base.OnFound!(j))
+					if(!base.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

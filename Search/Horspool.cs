@@ -20,13 +20,13 @@ namespace Search
 		public Horspool() : base()
 		{
 		}
-		public Horspool(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public Horspool(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
 
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound)
+		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
-			base.Init(patternMemory, onFound);
+			base.Init(patternMemory, patternMatched);
 			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
 		}
 
@@ -34,16 +34,13 @@ namespace Search
 		{
 			base.Validate();
 
-			if (this.BadChars == null)
-			{
-				throw new ArgumentNullException(nameof(this.BadChars));
-			}
+			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
 		}
 		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -52,13 +49,13 @@ namespace Search
 			int nmm = n - m;
 
 			//Searching
-			int j = 0;
+			int j = offset;
 			while (j <= nmm)
 			{
 				byte c = buffer[j + mm1];
 				if ((pattern[mm1] == c) && pattern.SequenceEqual(buffer[j..(j + m)]))
 				{
-					if(!base.OnFound!(j))
+					if(!base.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

@@ -4,6 +4,7 @@ using Search.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace Search
 		public BruteForce() : base()
 		{
 		}
-		public BruteForce(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate onFound) : base(patternMemory, onFound)
+		public BruteForce(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
 
@@ -22,7 +23,7 @@ namespace Search
 		{
 			this.Validate();
 
-			ReadOnlySpan<byte> pattern = base.PatternMemory!.Value.Span;
+			ReadOnlySpan<byte> pattern = base.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			//Searching
@@ -39,7 +40,7 @@ namespace Search
 				}
 				if (i >= m)
 				{
-					if(!base.OnFound!(j))
+					if(!base.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}
