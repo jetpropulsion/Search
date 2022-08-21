@@ -11,7 +11,21 @@ namespace Search.Common
     public class SearchBase : ISearch
     {
         public ReadOnlyMemory<byte>? PatternMemory { get; protected set; } = null;
-        public ReadOnlySpan<byte> PatternSpan => this.PatternMemory.GetValueOrDefault().Span;
+        public ReadOnlySpan<byte> PatternSpan
+        {
+          get
+          {
+            if (PatternMemory == null)
+            {
+              throw new ArgumentNullException(nameof(PatternMemory));
+            }
+            if(!PatternMemory.HasValue)
+            {
+              throw new ArgumentException("Pattern has not been set", nameof(PatternMemory));
+            }
+            return this.PatternMemory.Value.Span;
+          }
+        }
         public ISearch.OnMatchFoundDelegate? OnPatternMatches { get; protected set; } = null;
         public SearchBase()
         {

@@ -1,10 +1,15 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json.Linq;
+
 using Search.Interfaces;
+
+using static SearchTest.SearchUnitTest;
 
 namespace SearchTest
 {
@@ -116,106 +121,119 @@ namespace SearchTest
 
 		public static int GetRandom(int min, int max) => Random.Shared.Next(min, max);
 
-		public struct Stats
+		public const int dividerWidth = 200 - 1;
+		public const char charLightHorizontalLine = '\u2500';
+		public const char charHeavyHorizontalLine = '\u2501';
+		public const char charLightVerticalLine = '\u2502';
+		public const char charHeavyVerticalLine = '\u2503';
+		public static readonly string singleDivider = string.Concat(Enumerable.Repeat<char>('-', dividerWidth));
+		public static readonly string doubleDivider = string.Concat(Enumerable.Repeat<char>('=', dividerWidth));
+		public static readonly string lightDivider = string.Concat(Enumerable.Repeat<char>(charLightHorizontalLine, dividerWidth));
+		public static readonly string heavyDivider = string.Concat(Enumerable.Repeat<char>(charHeavyHorizontalLine, dividerWidth));
+		public static readonly string stringLightVerticalLine = charLightVerticalLine.ToString();
+		public static readonly string stringHeavyVerticalLine = charHeavyVerticalLine.ToString();
+
+		public class Stats
 		{
-			public List<int> Offsets = new List<int>();
-			public TimeSpan InitTime = TimeSpan.Zero;
-			public TimeSpan SearchTime = TimeSpan.Zero; //{ get; set; }
+			public List<int> Offsets;
+			public long InitTime;
+			public long SearchTime;
+
 			public Stats()
 			{
+				this.Offsets = new List<int>();
+				this.InitTime = 0;
+				this.SearchTime = 0;
 			}
+			public long IncrementInitTime(long value) => Interlocked.Add(ref this.InitTime, value);
+			public long IncrementSearchTime(long value) => Interlocked.Add(ref this.SearchTime, value);
+			public double InitMilliseconds => TimeSpan.FromTicks(this.InitTime).TotalMilliseconds;
+			public double SearchMilliseconds => TimeSpan.FromTicks(this.SearchTime).TotalMilliseconds;
+			public double TotalMilliseconds => TimeSpan.FromTicks(this.InitTime + this.SearchTime).TotalMilliseconds;
 		};
+		public record StatTimes(long InitTime, long SearchTime, long TotalTime);
 
 		[TestMethod]
-		//[Timeout(120000)]
+		[Timeout(38400 * 1000)]
 		public void Test_All_ISearch_Derivates()
 		{
 			Assembly asm = typeof(Search.Interfaces.ISearch).Assembly;
-			if (asm == null)
-			{
-				throw new ApplicationException("Something wrong has happened.");
-			}
+			if (asm == null) throw new ApplicationException("Something wrong has happened.");
 
-			string single = string.Concat(Enumerable.Repeat<char>('-', 80 - 1));
+			Trace.WriteLine(heavyDivider);
 
-			int maxTestIterations = 20;
+			Trace.WriteLine(lightDivider);
+
+			const int maxTestIterations = 3; // 20;
+			const int maxTestPatterns = 1000; // maximal amount of matching byte sequences, distributed randomly over the buffer
+			const int minPatternSize = 3;
+			const int maxPatternSize = 273;
+			const int minBufferSize = 1048576;
+			const int maxBufferSize = minBufferSize * 256;
+
 			Dictionary<Type, Stats> dict = new();
 			for (int testIteration = 1; testIteration <= maxTestIterations; ++testIteration)
 			{
+				//Clear previous offsets only. Keep accumulated timings.
 				dict.Keys.ToList().ForEach(k => dict[k].Offsets.Clear());
 
-				int minPatternSize = 3;
-				int maxPatternSize = 273;
 				int patternSize = GetRandom(minPatternSize, maxPatternSize);
-				int minBufferSize = 1048576;
-				int maxBufferSize = 1048576 * 256;
 				int bufferSize = GetRandom(minBufferSize, maxBufferSize);
+				int lastSearchableOffset = bufferSize - patternSize;
 
+				//Generate unique pattern for this iteration from PRNG
 				byte[] testPattern = new byte[patternSize];
 				Random.Shared.NextBytes(testPattern);
-				byte[] testBuffer = new byte[bufferSize];
-				Array.Fill<byte>(testBuffer, 0, 0, bufferSize);
 
-				Trace.WriteLine($"Generator: iteration={testIteration}, patternSize={patternSize}, bufferSize={bufferSize}");
+				//Allocate buffer where searching algorithms will be looking for the pattern
+				byte[] testBuffer = new byte[bufferSize];
+				byte fillByte = testPattern[Random.Shared.Next(0, patternSize - 1)];
+				int fillStart = 0;
+				Array.Fill<byte>(testBuffer, fillByte, fillStart, bufferSize);
+
+				Trace.WriteLine($"Generator: iteration #{testIteration,-5}, fillByte:0x{fillByte:X2}, patternSize:{patternSize,6}, bufferSize:{bufferSize,16:###,###,###,###}");
 
 				int testOffset = 0;
-				List<int> testOffsets = new ();
-				int lastOffset = bufferSize - patternSize;
-				for (int i = 0; i < 1000 && testOffset + patternSize < lastOffset; ++i)
+				List<int> testOffsets = new();
+
+				for (int i = 0; i < maxTestPatterns && testOffset + patternSize < lastSearchableOffset; ++i)
 				{
-					int offset = Random.Shared.Next(testOffset, Math.Min(testOffset + (bufferSize / patternSize), lastOffset));
+					int offset = Random.Shared.Next(testOffset, Math.Min(testOffset + (bufferSize / patternSize), lastSearchableOffset));
 					testOffset = offset + patternSize;
 					testOffsets.Add(offset);
 					testPattern.CopyTo(testBuffer, offset);
-
 					//Trace.WriteLine($"Generator: inserting at {offset}");
 				}
 
 				Stopwatch initWatch = new();
 				Stopwatch searchWatch = new();
+
+				//double timeUpscaling = 1000.0;
+				//double timeDownscaling = 0.001;
+
 				foreach (Type type in ((TypeInfo[])asm.DefinedTypes).Select(t => t.UnderlyingSystemType))
 				{
 					bool hasMetric = type.GetInterfaces().Contains(typeof(Search.Interfaces.ISearch));
-					if (!type.IsClass || type.IsAbstract || !hasMetric)
-					{
-						continue;
-					}
-					if (typeof(Search.Common.SearchBase).Equals(type))
-					{
-						continue;
-					}
+					if (!type.IsClass || type.IsAbstract || !hasMetric) continue;
+					if (typeof(Search.Common.SearchBase).Equals(type)) continue;
 
 					if (!dict.ContainsKey(type)) dict.Add(type, new Stats());
-					Stats stat = dict[type];
-
-					if (string.IsNullOrWhiteSpace(type.FullName)) throw new ApplicationException("unexpected type behavior");
 
 					Assembly assembly = type.Assembly;
-					ISearch genericSearch = (ISearch)(assembly.CreateInstance(type.FullName, false) ?? throw new ApplicationException(type.FullName));
+					ISearch genericSearch = (ISearch)(assembly.CreateInstance(type.FullName!, false) ?? throw new ApplicationException(type.FullName));
 
 					//Trace.WriteLine($"Running \"{type.FullName}\"");
 
 					initWatch.Restart();
 					genericSearch.Init(testPattern, (int offset, Type caller) => { dict[caller].Offsets.Add(offset); return true; });
 					initWatch.Stop();
-					TimeSpan elapsedInit = initWatch.Elapsed;
-					stat.InitTime += elapsedInit;
-
+					dict[type].IncrementInitTime(initWatch.Elapsed.Ticks);
 
 					searchWatch.Restart();
 					genericSearch.Search(testBuffer, 0);
 					searchWatch.Stop();
-					TimeSpan elapsedSearch = searchWatch.Elapsed;
-					stat.SearchTime += elapsedSearch;
-
-					dict[type] = stat;
+					dict[type].IncrementSearchTime(searchWatch.Elapsed.Ticks);
 				}
-
-				//foreach(Type type in dict.Keys.OrderBy(t => t.FullName, StringComparer.Ordinal))
-				//{
-				//	Trace.WriteLine($"Algorithm \"{type.FullName}\" - Init: {dict[type].InitTime.TotalMilliseconds:F4} ms, Search: {dict[type].SearchTime.TotalMilliseconds:F4} ms");
-				//}
-				//Trace.WriteLine(single);
 
 				List<int> referenceOffsets = new List<int>();
 				ISearch referenceSearch = new Search.BruteForce();
@@ -223,18 +241,12 @@ namespace SearchTest
 				referenceSearch.Search(testBuffer, 0);
 				referenceOffsets.Sort();
 
-				//for (int i = 0; i < referenceOffsets.Count; ++i)
-				//{
-				//	Trace.WriteLine($"Expected match at position {i}: {referenceOffsets[i]}");
-				//}
-				Assert.IsTrue(testOffsets.Count == referenceOffsets.Count && testOffsets.SequenceEqual(referenceOffsets));
-
 				int discrepancies = 0;
 				foreach (Type key in dict.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal))
 				{
 					List<int> offsets = dict[key].Offsets;
 					offsets.Sort();
-					if(offsets.Count != referenceOffsets.Count || !offsets.SequenceEqual(referenceOffsets))
+					if (offsets.Count != referenceOffsets.Count || !offsets.SequenceEqual(referenceOffsets))
 					{
 						++discrepancies;
 						Trace.WriteLine($"results of the algorithm run \"{key}\" differs from brute force");
@@ -244,19 +256,51 @@ namespace SearchTest
 						}
 					}
 				}
-				if(discrepancies != 0)
+				if (discrepancies != 0)
 				{
 					Debug.WriteLine($"Total {discrepancies} discrepancies.");
 					Assert.Fail();
 				}
 			} //END: for(int testIteration
 
-			foreach (Type type in dict.Keys.OrderBy(t => t.FullName, StringComparer.Ordinal))
-			{
-				Trace.WriteLine($"Algorithm \"{type.FullName}\" - Init: {dict[type].InitTime.TotalMilliseconds:F4} ms, Search: {dict[type].SearchTime.TotalMilliseconds:F4} ms");
-			}
-			Trace.WriteLine(single);
+			Trace.WriteLine(lightDivider);
 
+			int maxName = dict.Keys.Select(t => t.FullName!.Length).Max();
+			var totalsList = dict.Values.Select(value => new StatTimes(value.InitTime, value.SearchTime, value.InitTime + value.SearchTime));
+			StatTimes grandTotals = totalsList.Aggregate((a, b) => new StatTimes(a.InitTime + b.InitTime, a.SearchTime + b.SearchTime, a.TotalTime + b.TotalTime));
+			double grandInit = TimeSpan.FromTicks(grandTotals.InitTime).TotalMilliseconds;
+			double grandSearch = TimeSpan.FromTicks(grandTotals.SearchTime).TotalMilliseconds;
+			double grandTotal = TimeSpan.FromTicks(grandTotals.InitTime + grandTotals.SearchTime).TotalMilliseconds;
+
+			foreach (Type type in dict.Keys.OrderBy(t => dict[t].InitTime + dict[t].SearchTime))
+			{
+				Stats stats = dict[type];
+
+				string[] statStrings = new string[]
+				{
+					type.FullName!.PadRight(maxName + 1, ' '),
+					$"Init {stats.InitMilliseconds,16:F3} ms ({stats.InitMilliseconds * 100.0 / grandTotal,6:##0.00}%)",
+					$"Search {stats.SearchMilliseconds,16:F3} ms ({stats.SearchMilliseconds * 100.0 / grandTotal,6:##0.00}%)",
+					$"Total {stats.TotalMilliseconds,16:F3} ms ({stats.TotalMilliseconds * 100.0 / grandTotal,6:##0.00}%)"
+				};
+
+				string stuff = string.Concat(" ", stringLightVerticalLine, " ");
+				string readableStats = string.Join(stuff, statStrings.Select(v => string.Concat(v, " ")).ToArray());
+				Trace.WriteLine(string.Concat(readableStats));
+			}
+
+
+			Trace.WriteLine(lightDivider);
+
+			string grand = string.Join(", ", new string[]
+			{
+				$"GrandInit {grandInit,16:###,###,##0.000}ms",
+				$"GrandSearch {grandSearch,16:###,###,##0.000}ms",
+				$"GrandTotal {grandTotal,16:###,###,##0.000}ms"
+			});
+			Trace.WriteLine(grand);
+
+			Trace.WriteLine(heavyDivider);
 		}
 
 	};	//END: class SearchUnitTest
