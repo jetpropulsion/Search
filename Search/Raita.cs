@@ -7,13 +7,14 @@ using System.Text.RegularExpressions;
 namespace Search
 {
 	/// <summary>
-	//	name:										Boyer-Moore algorithm
-	//	direction:							right to left
-	//	preprocess complexity:	O(m+s) time and space
-	//	search complexity:			O(mn) time
-	//	worst case:							3n text character comparisons (when searching non-periodic pattern)
-	//	ref:										BOYER R.S., MOORE J.S., 1977, A fast string searching algorithm. Communications of the ACM. 20:762-772.
+	/// name:										Raita algorithm
+	/// direction:							any
+	/// preprocess complexity:	O(m+s) time and O(s) space
+	/// search complexity:			O(mn) time
+	/// worst case:							n*n text character comparisons (quadratic worst case)
+	/// ref:										RAITA T., 1992, Tuning the Boyer-Moore-Horspool string searching algorithm, Software - Practice & Experience, 22(10):879-884.
 	/// </summary>
+
 	public class Raita : SearchBase
 	{
 		protected BadCharsBoyerMoore? BadChars = null;

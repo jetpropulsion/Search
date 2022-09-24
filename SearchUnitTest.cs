@@ -164,12 +164,12 @@ namespace SearchTest
 
 			Trace.WriteLine(lightDivider);
 
-			const int maxTestIterations = 3; // 20;
+			const int maxTestIterations = 4;	// 20;
 			const int maxTestPatterns = 1000; // maximal amount of matching byte sequences, distributed randomly over the buffer
 			const int minPatternSize = 3;
 			const int maxPatternSize = 273;
-			const int minBufferSize = 1048576;
-			const int maxBufferSize = minBufferSize * 256;
+			const int minBufferSize = 1048576 * 4;
+			const int maxBufferSize = minBufferSize * 64;
 
 			Dictionary<Type, Stats> dict = new();
 			for (int testIteration = 1; testIteration <= maxTestIterations; ++testIteration)
@@ -250,6 +250,12 @@ namespace SearchTest
 					{
 						++discrepancies;
 						Trace.WriteLine($"results of the algorithm run \"{key}\" differs from brute force");
+
+						for (int i = 0; i < referenceOffsets.Count; ++i)
+						{
+							Trace.WriteLine($"algorithm \"{referenceSearch.GetType().FullName}\" match at position {i}: {referenceOffsets[i]}");
+						}
+
 						for (int i = 0; i < offsets.Count; ++i)
 						{
 							Trace.WriteLine($"algorithm \"{key.FullName}\" match at position {i}: {offsets[i]}");
