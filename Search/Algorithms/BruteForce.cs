@@ -1,14 +1,7 @@
 ﻿using Search.Common;
 using Search.Interfaces;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Search
+namespace Search.Algorithms
 {
 	public class BruteForce : SearchBase
 	{
@@ -19,7 +12,7 @@ namespace Search
 		{
 		}
 
-		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
@@ -35,13 +28,13 @@ namespace Search
 			for (int j = offset; j <= n - m; ++j)
 			{
 				int i = 0;
-				while( i < m && pattern[i] == buffer[i + j])
+				while (i < m && pattern[i] == buffer[i + j])
 				{
 					++i;
 				}
 				if (i >= m)
 				{
-					if(!base.OnPatternMatches!(j, this.GetType()))
+					if (!base.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}

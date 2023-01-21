@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Search
+namespace Search.Algorithms
 {
 	/// <summary>
 	//	name:										Zhu-Takaoka algorithm
@@ -25,29 +25,29 @@ namespace Search
 		public ZsuTakaoka() : base()
 		{
 		}
-		public ZsuTakaoka(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
+		public ZsuTakaoka(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
+		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			base.Init(patternMemory, patternMatched);
-			this.BadChars = new BadCharsZsuTakaoka(patternMemory.Span);
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
+			BadChars = new BadCharsZsuTakaoka(patternMemory.Span);
+			GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
 		{
 			base.Validate();
 
-			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
-			if (this.GoodSuffixes == null) throw new ArgumentNullException(nameof(this.GoodSuffixes));
+			if (BadChars == null) throw new ArgumentNullException(nameof(BadChars));
+			if (GoodSuffixes == null) throw new ArgumentNullException(nameof(GoodSuffixes));
 		}
-		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-			this.Validate();
+			Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = base.PatternSpan;
+			ReadOnlySpan<byte> pattern = PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int m = pattern.Length;
@@ -61,23 +61,24 @@ namespace Search
 			while (j <= n - m)
 			{
 				int i = mm1;
-				while (((uint)i < (uint)m) && (pattern[i] == buffer[i + j]))
+				while ((uint)i < (uint)m && pattern[i] == buffer[i + j])
 				{
 					--i;
 				}
 				if (i < 0)
 				{
-					if(!base.OnPatternMatches!(j, this.GetType()))
+					if (!OnPatternMatches!(j, GetType()))
 					{
 						return;
 					}
-					j += this.GoodSuffixes![0];
+					j += GoodSuffixes![0];
 				}
 				else
 				{
-					j += Math.Max(this.GoodSuffixes![i], this.BadChars![ buffer[j + mm2], buffer[j + mm1] ]);
+					j += Math.Max(GoodSuffixes![i], BadChars![buffer[j + mm2], buffer[j + mm1]]);
 				}
 			}
 
 		}
-	}};  //END: namespace Search
+	}
+};  //END: namespace Search

@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Search.Interfaces;
+using Search.Algorithms;
 
-namespace Search
+namespace Search.Algorithms
 {
 	/// <summary>
 	//	name:										Turbo Boyer-Moore algorithm
@@ -21,11 +22,11 @@ namespace Search
 		{
 
 		}
-		public TurboBoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
+		public TurboBoyerMoore(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
 
-		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
 
@@ -47,7 +48,7 @@ namespace Search
 
 			//Searching
 			int j = offset;
-			int u = offset;		//TODO: test, it was 0
+			int u = offset;   //TODO: test, it was 0
 			shift = m;
 			while (j <= nmm)
 			{
@@ -62,7 +63,7 @@ namespace Search
 				}
 				if (i < 0)
 				{
-					if(!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}
@@ -73,7 +74,7 @@ namespace Search
 				{
 					v = mm1 - i;
 					turboShift = u - v;
-					bcShift = this.BadChars![ buffer[i + j] ] - mp1 + i;
+					bcShift = this.BadChars![buffer[i + j]] - mp1 + i;
 					shift = Math.Max(turboShift, bcShift);
 					shift = Math.Max(shift, this.GoodSuffixes![i]);
 					if (shift == this.GoodSuffixes[i])
@@ -92,6 +93,7 @@ namespace Search
 				j += shift;
 			}
 		}
-	}};	//END: namespace Search
+	}
+};  //END: namespace Search
 
 

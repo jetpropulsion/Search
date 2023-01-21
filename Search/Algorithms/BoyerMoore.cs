@@ -4,7 +4,7 @@ using Search.Interfaces;
 using Search.Common;
 using System.Reflection;
 
-namespace Search
+namespace Search.Algorithms
 {
 	/// <summary>
 	//	name:										Boyer-Moore algorithm
@@ -25,27 +25,26 @@ namespace Search
 		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
 		{
 		}
-		public override void Init(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
+		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			base.Init(patternMemory, patternMatched);
-			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
-			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
+			BadChars = new BadCharsBoyerMoore(patternMemory.Span);
+			GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
 
 		public override void Validate()
 		{
 			base.Validate();
-
-			if (this.BadChars == null) throw new ArgumentNullException(nameof(this.BadChars));
-			if (this.GoodSuffixes == null) throw new ArgumentNullException(nameof(this.GoodSuffixes));
+			ArgumentNullException.ThrowIfNull(BadChars, nameof(BadChars));
+			ArgumentNullException.ThrowIfNull(GoodSuffixes, nameof(GoodSuffixes));
 		}
 
-		public override void Search(ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-			this.Validate();
+			Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = base.PatternSpan;
+			ReadOnlySpan<byte> pattern = PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int j = offset;
@@ -54,25 +53,25 @@ namespace Search
 			int mm1 = m - 1;
 			int mp1 = m + 1;
 
-			while(j <= n - m)
+			while (j <= n - m)
 			{
 				int i = mm1;
-				while(i >= 0 && pattern[i] == buffer[i + j])
+				while (i >= 0 && pattern[i] == buffer[i + j])
 				{
 					--i;
 				}
-				if(i < 0)
+				if (i < 0)
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!OnPatternMatches!(j, GetType()))
 					{
 						return;
 					}
 
-					j += this.GoodSuffixes![0];
+					j += GoodSuffixes![0];
 				}
 				else
 				{
-					j += Math.Max(this.GoodSuffixes![i], this.BadChars![ buffer[i + j] ] - mp1 + i);
+					j += Math.Max(GoodSuffixes![i], BadChars![buffer[i + j]] - mp1 + i);
 				}
 			}
 		}
