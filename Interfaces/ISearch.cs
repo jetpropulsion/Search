@@ -22,7 +22,7 @@ namespace Search.Interfaces
         /// </summary>
         /// <param name="patternMemory">Memory pattern we are searching for, for any future input buffer provided</param>
         /// <param name="patternMatched">User specified callback function, provides offset of the match in the input block and information who is the caller</param>
-    		abstract void Init(ReadOnlyMemory<byte> patternMemory, OnMatchFoundDelegate patternMatched);
+    		abstract void Init(in ReadOnlyMemory<byte> patternMemory, OnMatchFoundDelegate patternMatched);
 
         /// <summary>
         /// Actual search, only a reference to the buffer and offset inside it is needed.
@@ -30,7 +30,7 @@ namespace Search.Interfaces
         /// </summary>
         /// <param name="bufferMemory">User provided input buffer where we should search for the pattern</param>
         /// <param name="offset">Offset from which we will start or continue looking for the pattern, from the begging of the supplied input buffer (zero)</param>
-				abstract void Search(ReadOnlyMemory<byte> bufferMemory, int offset);
+				abstract void Search(in ReadOnlyMemory<byte> bufferMemory, int offset);
 
         /// <summary>
         /// Validates internal object state.

@@ -12,7 +12,7 @@ namespace Search.Common
 	public class BadCharsZsuTakaoka
 	{
 		public readonly int[,] BadChars;
-		public BadCharsZsuTakaoka(ReadOnlySpan<byte> pattern)
+		public BadCharsZsuTakaoka(in ReadOnlySpan<byte> pattern)
 		{
 			const int maxAlphabet = Search.Common.Constants.SearchAlphabetSize;
 			//Allocate

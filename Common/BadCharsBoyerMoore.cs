@@ -11,7 +11,7 @@ namespace Search.Common
 	public class BadCharsBoyerMoore
 	{
 		public readonly int[] BadChars;
-		public BadCharsBoyerMoore(ReadOnlySpan<byte> pattern)
+		public BadCharsBoyerMoore(in ReadOnlySpan<byte> pattern)
 		{
 			//Allocate
 			this.BadChars = new int[Search.Common.Constants.SearchAlphabetSize];
