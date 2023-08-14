@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Search.Common
+﻿namespace Search.Common
 {
+	using System.Runtime.CompilerServices;
+
 	//In reference literature and/or implementation, "GoodSuffixesBase" is known as "bmGs"
 	public class GoodSuffixesBoyerMoore : SuffixesBase
 	{
 		public readonly int[] GoodSuffixes;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public GoodSuffixesBoyerMoore(in ReadOnlySpan<byte> pattern) : base(pattern)
 		{
 			int m = pattern.Length;
@@ -48,14 +46,17 @@ namespace Search.Common
 
 		public override int this[int index]
 		{
-			get
-			{
-				if (index < 0 || index > this.GoodSuffixes.Length) throw new ArgumentOutOfRangeException("index");
-				return this.GoodSuffixes[index];
-			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+			get => index < 0 || index > this.GoodSuffixes.Length ? throw new ArgumentOutOfRangeException(nameof(index)) : this.GoodSuffixes[index];
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			protected set
 			{
-				if (index < 0 || index > this.GoodSuffixes.Length) throw new ArgumentOutOfRangeException("index");
+				if (index < 0 || index > this.GoodSuffixes.Length)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index));
+				}
+
 				this.GoodSuffixes[index] = value;
 			}
 		}

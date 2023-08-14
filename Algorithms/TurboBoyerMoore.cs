@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Search.Interfaces;
-using Search.Algorithms;
-
-namespace Search.Algorithms
+﻿namespace Search.Algorithms
 {
+	using Search.Interfaces;
+
+	using System.Runtime.CompilerServices;
+
 	/// <summary>
 	//	name:										Turbo Boyer-Moore algorithm
 	//	direction:							right to left
@@ -18,14 +14,24 @@ namespace Search.Algorithms
 	/// </summary>
 	public class TurboBoyerMoore : BoyerMoore, ISearch
 	{
-		public TurboBoyerMoore() : base()
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public TurboBoyerMoore() :
+			base()
 		{
 
 		}
-		public TurboBoyerMoore(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public TurboBoyerMoore(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
+			base(patternMemory, patternMatched)
 		{
 		}
 
+#if DEBUG
+		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+#else
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#endif
 		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
 			this.Validate();
@@ -37,11 +43,6 @@ namespace Search.Algorithms
 			int m = pattern.Length;
 			int n = buffer.Length;
 
-			int bcShift;
-			int i;
-			int shift;
-			int v;
-			int turboShift;
 			int mm1 = m - 1;
 			int mp1 = m + 1;
 			int nmm = n - m;
@@ -49,10 +50,10 @@ namespace Search.Algorithms
 			//Searching
 			int j = offset;
 			int u = offset;   //TODO: test, it was 0
-			shift = m;
+			int shift = m;
 			while (j <= nmm)
 			{
-				i = m - 1;
+				int i = m - 1;
 				while ((i >= 0) && (pattern[i] == buffer[i + j]))
 				{
 					--i;
@@ -72,9 +73,9 @@ namespace Search.Algorithms
 				}
 				else
 				{
-					v = mm1 - i;
-					turboShift = u - v;
-					bcShift = this.BadChars![buffer[i + j]] - mp1 + i;
+					int v = mm1 - i;
+					int turboShift = u - v;
+					int bcShift = this.BadChars![buffer[i + j]] - mp1 + i;
 					shift = Math.Max(turboShift, bcShift);
 					shift = Math.Max(shift, this.GoodSuffixes![i]);
 					if (shift == this.GoodSuffixes[i])
@@ -93,7 +94,7 @@ namespace Search.Algorithms
 				j += shift;
 			}
 		}
-	}
+	};
 };  //END: namespace Search
 
 

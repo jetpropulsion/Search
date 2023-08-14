@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-
-namespace Search.Common
+﻿namespace Search.Common
 {
+	using System.Text.Json;
+	using System.Text.Json.Serialization;
+
 	public static partial class Constants
 	{
 		#region JSON serializer
 
-		public static readonly JsonSerializerOptions DefaultJsonSerializeOptions = new JsonSerializerOptions()
+		public static readonly JsonSerializerOptions DefaultJsonSerializeOptions = new()
 		{
 			AllowTrailingCommas = false,
 			IncludeFields = true, //
@@ -38,7 +33,7 @@ namespace Search.Common
 		public const int MaxRetryDelay = 75;
 		public const int DefaultReadBufferSize = 65536;
 
-		public static readonly FileStreamOptions DefaultStreamReadOptions = new FileStreamOptions()
+		public static readonly FileStreamOptions DefaultStreamReadOptions = new()
 		{
 			Access = FileAccess.Read,
 			BufferSize = DefaultReadBufferSize,
@@ -52,14 +47,14 @@ namespace Search.Common
 
 		#region Directory Enumeration default options
 
-		public static readonly EnumerationOptions DefaultDirEnumOptions = new EnumerationOptions()
+		public static readonly EnumerationOptions DefaultDirEnumOptions = new()
 		{
 			MatchCasing = MatchCasing.PlatformDefault,
 			MaxRecursionDepth = 0,
 			IgnoreInaccessible = false,
 			RecurseSubdirectories = true,
 			ReturnSpecialDirectories = false,
-			AttributesToSkip = (FileAttributes)0,
+			AttributesToSkip = 0,
 			MatchType = MatchType.Simple,
 		};
 
@@ -113,10 +108,6 @@ namespace Search.Common
 		public const string StringHexUpper = $"{StringDec}ABCDEF";
 		public const string StringHexLower = $"{StringDec}abcdef";
 
-		#endregion
-
-		#region Searching constants
-		public const int SearchAlphabetSize = 256;
 		#endregion
 	};
 

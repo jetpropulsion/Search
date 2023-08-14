@@ -1,18 +1,24 @@
 ﻿namespace Search.Common
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Text;
+	using System.Threading.Tasks;
+
 	using Search.Interfaces;
 
 	using System.Runtime.CompilerServices;
 
-	//public class BadCharsZsuTakaoka
-	//In reference literature and/or implementation, "BadCharsZsuTakaoka" is known as "ztBc"
+	//public class BadCharsBerryRavindran
+	//In reference literature and/or implementation, "BadCharsBerryRavindran" is known as "brBc"
 	//Used by: Zsu-Takaoka
-	public class BadCharsZsuTakaoka
+	public class BadCharsBerryRavindran
 	{
 		public readonly int[,] BadChars;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BadCharsZsuTakaoka(in ReadOnlySpan<byte> pattern)
+		public BadCharsBerryRavindran(in ReadOnlySpan<byte> pattern)
 		{
 			int maxAlphabet = ISearch.MaxAlphabetSize;
 
@@ -21,22 +27,28 @@
 
 			//Init
 			int m = pattern.Length;
+			int mp2 = m + 2;
+			int mp1 = m + 1;
 			int mm1 = m - 1;
 
 			for (int i = 0; i < maxAlphabet; ++i)
 			{
 				for (int j = 0; j < maxAlphabet; ++j)
 				{
-					this.BadChars[i, j] = m;
+					this.BadChars[i, j] = mp2;
 				}
 			}
 			for (int i = 0; i < maxAlphabet; ++i)
 			{
-				this.BadChars[i, pattern[0]] = mm1;
+				this.BadChars[i, pattern[0]] = mp1;
 			}
-			for (int i = 1; i < mm1; ++i)
+			for (int i = 0; i < mm1; ++i)
 			{
-				this.BadChars[pattern[i - 1], pattern[i]] = mm1 - i;
+				this.BadChars[pattern[i], pattern[i + 1]] = m - i;
+			}
+			for (int i = 0; i < maxAlphabet; ++i)
+			{
+				this.BadChars[pattern[mm1], i] = 1;
 			}
 		}
 
@@ -50,5 +62,5 @@
 					: y < 0 || y > this.BadChars.GetLength(1) ? throw new ArgumentOutOfRangeException("y") : this.BadChars[x, y];
 			}
 		}
-	};  //END: class BadCharsZsuTakaoka
+	};  //END: class BadCharsBerryRavindran
 };  //END: namespace Search

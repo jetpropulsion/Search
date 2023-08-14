@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Search.Common
+﻿namespace Search.Common
 {
+	using System.Runtime.CompilerServices;
+
 	//In reference literature and/or implementation, "SuffixesBase" is known as "suff"
 	public class SuffixesBase
 	{
 		public readonly int[] Suffixes;
 
-		public SuffixesBase(ReadOnlySpan<byte> pattern)
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public SuffixesBase(in ReadOnlySpan<byte> pattern)
 		{
 			int m = pattern.Length;
 
@@ -48,14 +45,27 @@ namespace Search.Common
 
 		public virtual int this[int index]
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get
 			{
-				if (index < 0 || index > this.Suffixes.Length) throw new ArgumentOutOfRangeException("index");
-				return this.Suffixes[index];
+				return index < 0
+					? throw new ArgumentOutOfRangeException(nameof(index), $"provided index is less than zero: {nameof(index)}={index}, {nameof(this.Suffixes.Length)}={this.Suffixes.Length}")
+					: index >= this.Suffixes.Length
+					? throw new ArgumentOutOfRangeException(nameof(index), $"provided index is greater than the length: {nameof(index)}={index}, {nameof(this.Suffixes.Length)}={this.Suffixes.Length}")
+					: this.Suffixes[index];
 			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			protected set
 			{
-				if (index < 0 || index > this.Suffixes.Length) throw new ArgumentOutOfRangeException("index");
+				if (index < 0)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index), $"provided index is less than zero: {nameof(index)}={index}, {nameof(this.Suffixes.Length)}={this.Suffixes.Length}");
+				}
+				if (index >= this.Suffixes.Length)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index), $"provided index is greater than the length: {nameof(index)}={index}, {nameof(this.Suffixes.Length)}={this.Suffixes.Length}");
+				}
 				this.Suffixes[index] = value;
 			}
 		}

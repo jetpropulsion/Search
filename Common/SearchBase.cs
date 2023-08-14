@@ -1,67 +1,63 @@
-﻿using Search.Interfaces;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Search.Common
+﻿namespace Search.Common
 {
+	using Search.Interfaces;
+
+	using System.Runtime.CompilerServices;
+
 	public class SearchBase : ISearch
 	{
 		public ReadOnlyMemory<byte>? PatternMemory
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get;
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			protected set;
 		}
-		= null;
 
 		public ReadOnlySpan<byte> PatternSpan
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get
 			{
-				if (PatternMemory == null)
-				{
-					throw new ArgumentNullException(nameof(PatternMemory));
-				}
-				if (!PatternMemory.HasValue)
-				{
-					throw new ArgumentException("Pattern has not been set", nameof(PatternMemory));
-				}
-				return this.PatternMemory.Value.Span;
+				ArgumentNullException.ThrowIfNull(this.PatternMemory, nameof(this.PatternMemory));
+				return !this.PatternMemory.HasValue
+					? throw new ArgumentException("Pattern has not been set", nameof(this.PatternMemory))
+					: this.PatternMemory.Value.Span;
 			}
 		}
 		public ISearch.OnMatchFoundDelegate? OnPatternMatches
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get;
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			protected set;
-		} = null;
+		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public SearchBase()
 		{
+			this.PatternMemory = null;
+			this.OnPatternMatches = null;
 		}
 
-		public SearchBase(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
-		{
-			(this as ISearch).Init(patternMemory, patternMatched);
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public SearchBase(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) => (this as ISearch).Init(patternMemory, patternMatched);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public virtual void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			this.OnPatternMatches = patternMatched;
 			this.PatternMemory = patternMemory;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public virtual void Validate()
 		{
-			ArgumentNullException.ThrowIfNull(PatternMemory, nameof(PatternMemory));
-			ArgumentNullException.ThrowIfNull(OnPatternMatches, nameof(OnPatternMatches));
+			ArgumentNullException.ThrowIfNull(this.PatternMemory, nameof(this.PatternMemory));
+			ArgumentNullException.ThrowIfNull(this.OnPatternMatches, nameof(this.OnPatternMatches));
 		}
 
-		public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
-		{
-			throw new NotImplementedException(nameof(Search));
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset) => throw new NotImplementedException(nameof(Search));
 	};
 };

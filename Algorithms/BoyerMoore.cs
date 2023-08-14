@@ -1,11 +1,10 @@
-﻿using System;
-using System.Text;
-using Search.Interfaces;
-using Search.Common;
-using System.Reflection;
-
-namespace Search.Algorithms
+﻿namespace Search.Algorithms
 {
+	using Search.Common;
+	using Search.Interfaces;
+
+	using System.Runtime.CompilerServices;
+
 	/// <summary>
 	//	name:										Boyer-Moore algorithm
 	//	direction:							right to left
@@ -19,32 +18,45 @@ namespace Search.Algorithms
 		public BadCharsBoyerMoore? BadChars { get; protected set; } = null;
 		public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
 
-		public BoyerMoore() : base()
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public BoyerMoore() :
+			base()
 		{
 		}
-		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) : base(patternMemory, patternMatched)
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
+			base(patternMemory, patternMatched)
 		{
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			base.Init(patternMemory, patternMatched);
-			BadChars = new BadCharsBoyerMoore(patternMemory.Span);
-			GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
+			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
+			this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Validate()
 		{
 			base.Validate();
-			ArgumentNullException.ThrowIfNull(BadChars, nameof(BadChars));
-			ArgumentNullException.ThrowIfNull(GoodSuffixes, nameof(GoodSuffixes));
+			ArgumentNullException.ThrowIfNull(this.BadChars, nameof(this.BadChars));
+			ArgumentNullException.ThrowIfNull(this.GoodSuffixes, nameof(this.GoodSuffixes));
 		}
 
+#if DEBUG
+		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+#else
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#endif
 		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-			Validate();
+			this.Validate();
 
 			//Searching
-			ReadOnlySpan<byte> pattern = PatternSpan;
+			ReadOnlySpan<byte> pattern = this.PatternSpan;
 			ReadOnlySpan<byte> buffer = bufferMemory.Span;
 
 			int j = offset;
@@ -62,16 +74,16 @@ namespace Search.Algorithms
 				}
 				if (i < 0)
 				{
-					if (!OnPatternMatches!(j, GetType()))
+					if (!this.OnPatternMatches!(j, this.GetType()))
 					{
 						return;
 					}
 
-					j += GoodSuffixes![0];
+					j += this.GoodSuffixes![0];
 				}
 				else
 				{
-					j += Math.Max(GoodSuffixes![i], BadChars![buffer[i + j]] - mp1 + i);
+					j += Math.Max(this.GoodSuffixes![i], this.BadChars![buffer[i + j]] - mp1 + i);
 				}
 			}
 		}

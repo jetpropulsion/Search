@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Search.Common
+﻿namespace Search.Common
 {
+	using Search.Interfaces;
+
+	using System.Runtime.CompilerServices;
+
 	//In reference literature and/or implementation, "BadCharsBase" is known as "bmBc"
 	//Used by: Boyer-Moore and derivatives (Turbo BM, Tuned BM, Horspool, Raita, Zsu-Takaoka)
 	public class BadCharsBoyerMoore
 	{
 		public readonly int[] BadChars;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public BadCharsBoyerMoore(in ReadOnlySpan<byte> pattern)
 		{
 			//Allocate
-			this.BadChars = new int[Search.Common.Constants.SearchAlphabetSize];
+			this.BadChars = new int[ISearch.MaxAlphabetSize];
 
 			//Init
 			int m = pattern.Length;
@@ -30,14 +30,21 @@ namespace Search.Common
 
 		public virtual int this[int index]
 		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get
 			{
-				if (index < 0 || index > this.BadChars.Length) throw new ArgumentOutOfRangeException("index");
-				return this.BadChars[index];
+				return index < 0 || index > this.BadChars.Length
+					? throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)}={index}, {nameof(this.BadChars.Length)}={this.BadChars.Length}")
+					: this.BadChars[index];
 			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			protected set
 			{
-				if (index < 0 || index > this.BadChars.Length) throw new ArgumentOutOfRangeException("index");
+				if (index < 0 || index > this.BadChars.Length)
+				{
+					throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)}={index}, {nameof(this.BadChars.Length)}={this.BadChars.Length}");
+				}
 				this.BadChars[index] = value;
 			}
 		}

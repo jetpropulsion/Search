@@ -3,29 +3,27 @@
 	using Search.Common;
 	using Search.Interfaces;
 
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 	using System.Runtime.CompilerServices;
+	using System.Text;
+	using System.Threading.Tasks;
 
-	/// <summary>
-	/// name:										Raita algorithm
-	/// direction:							any
-	/// preprocess complexity:	O(m+s) time and O(s) space
-	/// search complexity:			O(mn) time
-	/// worst case:							n*n text character comparisons (quadratic worst case)
-	/// ref:										RAITA T., 1992, Tuning the Boyer-Moore-Horspool string searching algorithm, Software - Practice & Experience, 22(10):879-884.
-	/// </summary>
-
-	public class Raita : SearchBase
+	[Experimental(nameof(KnuthMorrisPratt))]
+	public class KnuthMorrisPratt : SearchBase
 	{
-		protected BadCharsBoyerMoore? BadChars = null;
+		//protected BadCharsBoyerMoore? BadChars = null;
+		protected KnuthMorrisPrattNext? Next = null;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public Raita() :
+		public KnuthMorrisPratt() :
 			base()
 		{
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public Raita(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
+		public KnuthMorrisPratt(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
 			base(patternMemory, patternMatched)
 		{
 		}
@@ -34,14 +32,14 @@
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			base.Init(patternMemory, patternMatched);
-			this.BadChars = new BadCharsBoyerMoore(patternMemory.Span);
+			this.Next = new KnuthMorrisPrattNext(patternMemory.Span);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Validate()
 		{
 			base.Validate();
-			ArgumentNullException.ThrowIfNull(this.BadChars, nameof(this.BadChars));
+			ArgumentNullException.ThrowIfNull(this.Next, nameof(this.Next));
 		}
 
 #if DEBUG
@@ -51,7 +49,7 @@
 #endif
 		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
 		{
-			base.Validate();
+			this.Validate();
 
 			//Searching
 			ReadOnlySpan<byte> pattern = this.PatternSpan;
@@ -60,35 +58,25 @@
 			int j = offset;
 			int m = pattern.Length;
 			int n = buffer.Length;
-			int mm1 = m - 1;
-			int mm2 = mm1 - 1;
-			int mr1 = m >> 1;
 
-			byte first = pattern[0];
-			byte middle = pattern[mr1];
-			byte last = pattern[mm1];
-
-			ReadOnlySpan<byte> innerPattern = pattern[1..mm2];
-
-			while (j <= n - m)
+			int i = 0;
+			while (j < n)
 			{
-				byte c = buffer[j + mm1];
-
-				if (last == c &&
-						middle == buffer[j + mr1] &&
-						first == buffer[j] &&
-						innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
-				)
+				while (i > -1 && pattern[i] != buffer[j])
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					i = this.Next![i];
+				}
+				i++;
+				j++;
+				if (i >= m)
+				{
+					if(!this.OnPatternMatches!(j - i, this.GetType()))
 					{
 						return;
 					}
+					i = this.Next![i];
 				}
-
-				j += this.BadChars![c];
 			}
 		}
 	}
-};  //END: namespace Search
-
+}
