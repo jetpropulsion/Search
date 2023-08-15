@@ -7,15 +7,15 @@
 	using System.Text;
 	using System.Threading.Tasks;
 
-	public class KnuthMorrisPrattNext
+	public class MorrisPrattNext
 	{
 		public readonly int[] Next;
-		public KnuthMorrisPrattNext(in ReadOnlySpan<byte> pattern)
+		public MorrisPrattNext(in ReadOnlySpan<byte> pattern)
 		{
 			int m = pattern.Length;
-			//this.Next = new int[m + 1];
+
 			this.Next = Enumerable.Repeat<int>(0, m + 1).ToArray();
-			this.Next[0] = -1;
+			Next[0] = -1;
 
 			int i = 0;
 			int j = -1;
@@ -26,12 +26,7 @@
 				{
 					j = this.Next[j];
 				}
-				i++;
-				j++;
-				if (i < m && pattern[i] == pattern[j])
-					this.Next[i] = this.Next[j];
-				else
-					this.Next[i] = j;
+				this.Next[++i] = ++j;
 			}
 		}
 		public virtual int this[int index]
@@ -51,5 +46,5 @@
 			}
 		}
 
-	};  //END: public class KnuthMorrisPrattNext
+	};  //END: public class MorrisPrattNext
 }
