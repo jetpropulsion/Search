@@ -81,6 +81,10 @@
 					{
 						return;
 					}
+					if(j == nmm)
+					{
+						break;
+					}
 				}
 				j += this.BadChars![ buffer[j + m], buffer[j + mp1] ];
 			}

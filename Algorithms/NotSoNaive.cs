@@ -10,6 +10,8 @@
 	using System.Text;
 	using System.Threading.Tasks;
 
+	//C. Hancart. Analyse exacte et en moyenne d'algorithmes de recherche d'un motif dans un texte. (1993).
+
 	//[Experimental(nameof(NotSoNaive))]
 	public class NotSoNaive : SearchBase
 	{
