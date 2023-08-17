@@ -12,7 +12,7 @@
 #else
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 #endif
-		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset, int size)
 		{
 			this.Validate();
 
@@ -22,8 +22,7 @@
 
 			//Searching
 			int m = pattern.Length;
-			int n = buffer.Length;
-			//int mm1 = m - 1;
+			int n = size;
 
 			for (int j = offset; j <= n - m; ++j)
 			{

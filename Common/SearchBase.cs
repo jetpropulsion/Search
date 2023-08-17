@@ -58,6 +58,9 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset) => throw new NotImplementedException(nameof(Search));
+		public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset, int size) => throw new NotImplementedException(nameof(Search));
+
+		//[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		//public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset) => Search(bufferMemory, offset, bufferMemory.Length);
 	};
 };

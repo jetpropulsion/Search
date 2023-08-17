@@ -49,7 +49,7 @@
 #else
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 #endif
-		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset)
+		public override void Search(in ReadOnlyMemory<byte> bufferMemory, int offset, int size)
 		{
 			base.Validate();
 
@@ -59,7 +59,7 @@
 
 			int j = offset;
 			int m = pattern.Length;
-			int n = buffer.Length;
+			int n = size;
 			int mm1 = m - 1;
 			int mm2 = mm1 - 1;
 			int mr1 = m >> 1;

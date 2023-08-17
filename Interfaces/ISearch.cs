@@ -25,7 +25,7 @@
 		/// </summary>
 		/// <param name="bufferMemory">User provided input buffer where we should search for the pattern</param>
 		/// <param name="offset">Offset from which we will start or continue looking for the pattern, from the begging of the supplied input buffer (zero)</param>
-		abstract void Search(in ReadOnlyMemory<byte> bufferMemory, int offset);
+		abstract void Search(in ReadOnlyMemory<byte> bufferMemory, int offset, int size);
 
 		/// <summary>
 		/// Validates internal object state.
