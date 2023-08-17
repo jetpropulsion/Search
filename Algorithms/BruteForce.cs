@@ -7,19 +7,6 @@
 
 	public class BruteForce : SearchBase
 	{
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BruteForce() :
-			base()
-		{
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BruteForce(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
-		}
-
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 #else

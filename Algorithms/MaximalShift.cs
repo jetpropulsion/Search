@@ -39,7 +39,7 @@
 			this.qsBc = new int[ISearch.MaxAlphabetSize];
 			this.adaptedGs = new int[m + 1];
 			this.minShift = new int[m + 1];
-			this.pat = new Pattern[m + 1];
+			this.patterns = new Pattern[m + 1];
 
 			ReadOnlySpan<byte> pattern = patternMemory.Span;
 
@@ -63,18 +63,11 @@
 			for (i = 0; i < m; ++i)
 			{
 				//pat[i] = new Pattern();
-				pat[i].loc = i;
-				pat[i].c = pattern[i];
+				patterns[i].loc = i;
+				patterns[i].c = pattern[i];
 			}
-			//qsort(pat, m, sizeof(pattern), pcmp);
-			/*
-			int maxShiftPcmp(pattern *pat1, pattern *pat2) {
-				 int dsh;
-				 dsh = minShift[pat2->loc] - minShift[pat1->loc];
-				 return(dsh ? dsh : (pat2->loc - pat1->loc));
-			}
-			*/
-			List<Pattern> p = pat.ToList();
+
+			List<Pattern> p = patterns.ToList();
 			p.Sort((Pattern pat1, Pattern pat2) =>
 			{
 				int dsh;
@@ -83,14 +76,20 @@
 			});
 
 			//void preQsBc(unsigned char *x, int m, int qbc[])
-			for (i = 0; i < ISearch.MaxAlphabetSize; i++) qsBc[i] = m + 1;
-			for (i = 0; i < m; i++) qsBc[pattern[i]] = m - i;
+			for (i = 0; i < ISearch.MaxAlphabetSize; i++)
+			{
+				qsBc[i] = m + 1;
+			}
+			for (i = 0; i < m; i++)
+			{
+				qsBc[pattern[i]] = m - i;
+			}
 
 
 			//void preAdaptedGs(unsigned char *x, int m, int adaptedGs[], pattern *pat)
 			int lshift, ploc;
 
-			Func<ReadOnlyMemory<byte>, int, int, Pattern[], int> matchShift = (x1, ploc, lshift, pat) =>
+			Func<ReadOnlyMemory<byte>, int, int, Pattern[], int> matchShift = (x1, ploc, lshift, patterns) =>
 			{
 				ReadOnlySpan<byte> x = x1.Span;
 
@@ -100,12 +99,12 @@
 					i = ploc;
 					while (--i >= 0)
 					{
-						j = pat[i].loc - lshift;
+						j = patterns[i].loc - lshift;
 						if (j < 0)
 						{
 							continue;
 						}
-						if (pat[i].c != x[j])
+						if (patterns[i].c != x[j])
 						{
 							break;
 						}
@@ -123,7 +122,7 @@
 			adaptedGs[0] = lshift = 1;
 			for (ploc = 1; ploc <= m; ++ploc)
 			{
-				lshift = matchShift(pmem, ploc, lshift, pat);
+				lshift = matchShift(pmem, ploc, lshift, patterns);
 				adaptedGs[ploc] = lshift;
 			}
 			for (ploc = 0; ploc < m; ++ploc)
@@ -131,11 +130,13 @@
 				lshift = adaptedGs[ploc];
 				while (lshift < m)
 				{
-					i = pat[ploc].loc - lshift;
-					if (i < 0 || pat[ploc].c != pattern[i])
+					i = patterns[ploc].loc - lshift;
+					if (i < 0 || patterns[ploc].c != pattern[i])
+					{
 						break;
+					}
 					++lshift;
-					lshift = matchShift(pmem, ploc, lshift, pat);
+					lshift = matchShift(pmem, ploc, lshift, patterns);
 				}
 				adaptedGs[ploc] = lshift;
 			}
@@ -154,10 +155,10 @@
 			public byte c;
 		};
 
-		int[] qsBc;
-		int[] adaptedGs;
-		int[] minShift;
-		Pattern[] pat;
+		private int[] qsBc;
+		private int[] adaptedGs;
+		private int[] minShift;
+		private Pattern[] patterns;
 
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -184,7 +185,7 @@
 			while (j <= nmm)
 			{
 				i = 0;
-				while (i < m && pat[i].c == buffer[j + pat[i].loc])
+				while (i < m && patterns[i].c == buffer[j + patterns[i].loc])
 				{
 					++i;
 				}
@@ -194,10 +195,11 @@
 					{
 						return;
 					}
-					if(j == nmm)
-					{
-						break;
-					}
+				}
+				if (j == nmm)
+				{
+					//NOTE: Fix, original was breaking the bounds on very last comparison
+					break;
 				}
 				j += Math.Max(adaptedGs[i], qsBc[buffer[j + m]]);
 			}

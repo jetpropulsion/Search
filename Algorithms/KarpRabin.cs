@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -10,10 +11,11 @@
 	using System.Text;
 	using System.Threading.Tasks;
 
-	//C. Hancart. Analyse exacte et en moyenne d'algorithmes de recherche d'un motif dans un texte. (1993).
+	//R. M. Karp and M. O. Rabin.
+	//Efficient randomized pattern-matching algorithms. ibmjrd, vol.31, n.2, pp.249--260, (1987).
 
-	//[Experimental(nameof(NotSoNaive))]
-	public class NotSoNaive : SearchBase
+	[Slow]
+	public class KarpRabin : SearchBase
 	{
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -33,42 +35,40 @@
 			int n = buffer.Length;
 
 			int i = 0;
-
-			int k;
-			int ell;
+			int d, hx, hy;
 
 			//Preprocessing
-			if (pattern[0] == pattern[1])
+			for (d = i = 1; i < m; ++i)
 			{
-				k = 2;
-				ell = 1;
+				d <<= 1;
 			}
-			else
+
+			for (hy = hx = i = 0; i < m; ++i)
 			{
-				k = 1;
-				ell = 2;
+				hx = ((hx << 1) + pattern[i]);
+				hy = ((hy << 1) + buffer[i]);
 			}
+
+			Func<int, int, int, int> rehash = (a, b, h) => ((h - a * d) << 1) + b;
 
 			//Searching
 			while (j <= n - m)
 			{
-				if (pattern[1] != buffer[j + 1])
+				if(hx == hy	&& pattern.SequenceEqual(buffer.Slice(j, m)))
 				{
-					j += k;
-				}
-				else
-				{
-					//if (memcmp(x + 2, y + j + 2, m - 2) == 0 && x[0] == y[j])
-					if (pattern[2..].Slice(0, m - 2).SequenceEqual(buffer[(j + 2)..].Slice(0, m - 2)) && pattern[0] == buffer[j])
+					if(!this.OnPatternMatches!(j, this.GetType()))
 					{
-						if(!this.OnPatternMatches!(j, this.GetType()))
-						{
-							return;
-						}
+						return;
 					}
-					j += ell;
+					if (j == n - m)
+					{
+						//Fix, original was breaking the bounds on very last comparison
+						break;
+					}
 				}
+				hy = rehash(buffer[j], buffer[j + m], hy);
+				++j;
 			}
 		}
-	};  //END: class MorrisPratt
+	};  //END: class KarpRabin
 } //END: namespace

@@ -18,17 +18,6 @@
 		public BadCharsBoyerMoore? BadChars { get; protected set; } = null;
 		public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BoyerMoore() :
-			base()
-		{
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BoyerMoore(ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
-		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)

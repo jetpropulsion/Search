@@ -1,4 +1,4 @@
-﻿namespace Search.Common
+﻿namespace Search.Attributes
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,7 +6,7 @@
 	using System.Text;
 	using System.Threading.Tasks;
 
-	[System.AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 	public class ExperimentalAttribute : Attribute
 	{
 		public string Name { get; set; } = @"";

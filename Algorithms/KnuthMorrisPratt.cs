@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -10,23 +11,11 @@
 	using System.Text;
 	using System.Threading.Tasks;
 
-	[Experimental(nameof(KnuthMorrisPratt))]
+	[Slow]
 	public class KnuthMorrisPratt : SearchBase
 	{
 		//protected BadCharsBoyerMoore? BadChars = null;
 		protected KnuthMorrisPrattNext? Next = null;
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public KnuthMorrisPratt() :
-			base()
-		{
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public KnuthMorrisPratt(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
-		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)

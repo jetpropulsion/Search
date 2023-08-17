@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -16,22 +17,11 @@
 	//	ref:										T. Berry and S. Ravindran., Proceedings of the Prague Stringology Club Workshop '99, pp.16--28, ctu, (1999).
 	/// </summary>
 
-	[Experimental(nameof(BerryRavindran))]
+	[Unstable]
 	public class BerryRavindran : SearchBase
 	{
 		public BadCharsBerryRavindran? BadChars { get; protected set; } = null;
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BerryRavindran() :
-			base()
-		{
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BerryRavindran(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
-		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
@@ -81,10 +71,10 @@
 					{
 						return;
 					}
-					if(j == nmm)
-					{
-						break;
-					}
+				}
+				if (j == nmm)
+				{
+					break;
 				}
 				j += this.BadChars![ buffer[j + m], buffer[j + mp1] ];
 			}

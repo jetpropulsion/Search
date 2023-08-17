@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -15,7 +16,7 @@
 	/// </summary>
 	/// 
 
-	//[Experimental(nameof(BackwardFast))]
+	[Experimental(nameof(BackwardFast))]
 	public class BackwardFast : SearchBase
 	{
 		//public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
@@ -40,8 +41,6 @@
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
 		{
 			base.Init(patternMemory, patternMatched);
-			//this.BadChars = new BadCharsZsuTakaoka(patternMemory.Span);
-			//this.GoodSuffixes = new GoodSuffixesBoyerMoore(patternMemory.Span);
 
 			bm_gs = new int[patternMemory.Length + 1, ISearch.MaxAlphabetSize];
 
@@ -149,7 +148,7 @@
 			{
 				while ((k = bc[buffer[s]]) != 0)
 				{
-					s = s + k;
+					s += k;
 				}
 				for (j = s - 1, k = m - 1; k > 0 && pattern[k - 1] == buffer[j]; k--, j--) ;
 				if (k == 0)
