@@ -17,7 +17,7 @@
 	//	ref:										T. Berry and S. Ravindran., Proceedings of the Prague Stringology Club Workshop '99, pp.16--28, ctu, (1999).
 	/// </summary>
 
-	[Unstable]
+	[Experimental]
 	public class BerryRavindran : SearchBase
 	{
 		public BadCharsBerryRavindran? BadChars { get; protected set; } = null;
