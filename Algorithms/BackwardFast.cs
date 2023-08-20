@@ -4,15 +4,18 @@
 	using Search.Common;
 	using Search.Interfaces;
 
+	using System.Reflection.PortableExecutable;
 	using System.Runtime.CompilerServices;
+	using System.Security.Cryptography;
+
 
 	/// <summary>
-	//	name:										Zhu-Takaoka algorithm
+	//	name:										BackwardFast algorithm
 	//	search direction:				right to left
 	//	preprocess complexity:	O(m+s*s) time and space
 	//	search complexity:			O(mn) time
 	//	worst case:							n*n text character comparisons (quadratic worst case)
-	//	ref:										ZHU R.F., TAKAOKA T., 1987, On improving the average case of the Boyer-Moore string matching algorithm, Journal of Information Processing 10(3):173-177.
+	//	ref:										D.Cantone and S.Faro. 	Fast-Search Algorithms: New Efficient Variants of the Boyer-Moore Pattern-Matching Algorithm. J.Autom.Lang.Comb., vol.10, n.5/6, pp.589--608, (2005).
 	/// </summary>
 	/// 
 
@@ -29,12 +32,6 @@
 			base()
 		{
 			bm_gs = null;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BackwardFast(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -107,8 +104,7 @@
 		public override void Validate()
 		{
 			base.Validate();
-			//ArgumentNullException.ThrowIfNull(this.BadChars, nameof(this.BadChars));
-			//ArgumentNullException.ThrowIfNull(this.GoodSuffixes, nameof(this.GoodSuffixes));
+			ArgumentNullException.ThrowIfNull(this.bm_gs, nameof(this.bm_gs));
 		}
 
 #if DEBUG

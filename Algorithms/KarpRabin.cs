@@ -62,7 +62,7 @@
 					}
 					if (j == n - m)
 					{
-						//Fix, original was breaking the bounds on very last comparison
+						//NOTE: Fix, original was breaking the bounds on very last comparison
 						break;
 					}
 				}

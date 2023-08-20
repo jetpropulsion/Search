@@ -61,7 +61,6 @@
 
 			//y[n + 1] = '\0';
 
-///*
 			int j = 0;
 			while (j <= nmm)
 			{
@@ -74,48 +73,12 @@
 				}
 				if (j == nmm)
 				{
+					//NOTE: Fix, original was breaking the bounds on very last comparison
 					break;
 				}
 				j += this.BadChars![ buffer[j + m], buffer[j + mp1] ];
 			}
 		}
-//*/
-/*
-			int j = 0;
-			while (j <= nmm)
-			{
-				int i = 0;
-				while (i < m && pattern[i] == buffer[j + i])
-				{
-					++i;
-				}
-				//for (i = 0; i < m && pattern[i] == buffer[j + i]; i++) ;
-				if (i >= m)
-				{
-					if(!this.OnPatternMatches!(j, this.GetType()))
-					{
-						return;
-					}
-				}
 
-				int jpm = j + m;
-				int jpmp1 = j + mp1;
-				if(jpm > nmm)
-				{
-					Trace.WriteLine($"j + m > n - m: m={m}, n={n}, n-m={nmm}, j={j}, j+m={jpm}, j+m+1={jpmp1}");
-					//break;
-					jpm = nmm;
-				}
-				if (jpmp1 > nmm)
-				{
-					Trace.WriteLine($"j + m + 1 > n - m: m={m}, n={n}, n-m={nmm}, j={j}, j+m={jpm}, j+m+1={jpmp1}");
-					//break;
-					jpmp1 = nmm;
-				}
-				j += this.BadChars![buffer[jpm], buffer[jpmp1]];
-				//j += this.BadChars![buffer[j + m], buffer[j + mp1]];
-			}
-		}
-*/
 	};  //END: class BerryRavindran
 };  //END: namespace Search
