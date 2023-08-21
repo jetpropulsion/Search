@@ -31,6 +31,17 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public override bool IsEnlargementNeeded() => true;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public override void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, out int bufferSize, out byte[] enlargedBuffer)
+		{
+			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
+			SearchBase.GetEnlargedBuffer(buffer, pattern, pattern.Length, out bufferSize, out enlargedBuffer);
+			Array.Fill<byte>(enlargedBuffer, 0, bufferSize, pattern.Length);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Validate()
 		{
 			base.Validate();
@@ -66,12 +77,17 @@
 			{
 				if (pattern.SequenceEqual(buffer.Slice(j, m)))
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}
 				}
-				if (j == nmm)
+				//if (j >= nmm || j + m > size || j + mp1 > size)
+				//{
+				//	//NOTE: Fix, original was breaking the bounds on very last comparison
+				//	break;
+				//}
+				if (j >= nmm)
 				{
 					//NOTE: Fix, original was breaking the bounds on very last comparison
 					break;
@@ -80,5 +96,4 @@
 			}
 		}
 
-	};  //END: class BerryRavindran
-};  //END: namespace Search
+	}};  //END: namespace Search

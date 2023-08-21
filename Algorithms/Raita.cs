@@ -80,7 +80,7 @@
 						innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
 				)
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

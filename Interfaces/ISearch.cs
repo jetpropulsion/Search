@@ -33,5 +33,20 @@
 		/// This is necessary because of the late initialization.
 		/// </summary>
 		abstract void Validate();
+
+		/// <summary>
+		/// For specific algorithms, returns whether modification of the search buffer is needed
+		/// </summary>
+		/// <returns>when true, it advises a caller to perform additional call to GetEnlargedBuffer() and then perform search on returned buffer</returns>
+		abstract bool IsEnlargementNeeded();
+
+		/// <summary>
+		/// Creates a copy of the search buffer, enlarges it as needed and returns separately bufferSize (old size) and buffer
+		/// </summary>
+		/// <param name="buffer">original buffer</param>
+		/// <param name="pattern">search pattern</param>
+		/// <param name="bufferSize">original buffer length</param>
+		/// <param name="enlargedBuffer">copy of the original buffer</param>
+		abstract void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, out int bufferSize, out byte[] enlargedBuffer);
 	};
 };

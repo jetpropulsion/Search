@@ -15,19 +15,6 @@
 	//[Experimental(nameof(MaximalShift))]
 	public class MaximalShift : SearchBase
 	{
-		//protected BadCharsBoyerMoore? BadChars = null;
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public MaximalShift() :
-			base()
-		{
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public MaximalShift(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched) :
-			base(patternMemory, patternMatched)
-		{
-		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
@@ -36,10 +23,11 @@
 			//this.Next = new MorrisPrattNext(patternMemory.Span);
 
 			int m = patternMemory.Length;
+			int mp1 = m + 1;
 			this.qsBc = new int[ISearch.MaxAlphabetSize];
-			this.adaptedGs = new int[m + 1];
-			this.minShift = new int[m + 1];
-			this.patterns = new Pattern[m + 1];
+			this.adaptedGs = new int[mp1];
+			this.minShift = new int[mp1];
+			this.patterns = new PatternLocation[mp1];
 
 			ReadOnlySpan<byte> pattern = patternMemory.Span;
 
@@ -62,13 +50,13 @@
 			//void orderPattern(unsigned char *x, int m, int (*pcmp)(), pattern *pat)
 			for (i = 0; i < m; ++i)
 			{
-				//pat[i] = new Pattern();
+				//pat[i] = new PatternLocation();
 				patterns[i].loc = i;
 				patterns[i].c = pattern[i];
 			}
 
-			List<Pattern> p = patterns.ToList();
-			p.Sort((Pattern pat1, Pattern pat2) =>
+			List<PatternLocation> p = patterns.ToList();
+			p.Sort((PatternLocation pat1, PatternLocation pat2) =>
 			{
 				int dsh;
 				dsh = minShift[pat2.loc] - minShift[pat1.loc];
@@ -78,7 +66,7 @@
 			//void preQsBc(unsigned char *x, int m, int qbc[])
 			for (i = 0; i < ISearch.MaxAlphabetSize; i++)
 			{
-				qsBc[i] = m + 1;
+				qsBc[i] = mp1;
 			}
 			for (i = 0; i < m; i++)
 			{
@@ -89,7 +77,7 @@
 			//void preAdaptedGs(unsigned char *x, int m, int adaptedGs[], pattern *pat)
 			int lshift, ploc;
 
-			Func<ReadOnlyMemory<byte>, int, int, Pattern[], int> matchShift = (x1, ploc, lshift, patterns) =>
+			Func<ReadOnlyMemory<byte>, int, int, PatternLocation[], int> matchShift = (x1, ploc, lshift, patterns) =>
 			{
 				ReadOnlySpan<byte> x = x1.Span;
 
@@ -149,7 +137,7 @@
 			//ArgumentNullException.ThrowIfNull(this.Next, nameof(this.Next));
 		}
 
-		public struct Pattern
+		public struct PatternLocation
 		{
 			public int loc;
 			public byte c;
@@ -158,7 +146,7 @@
 		private int[] qsBc;
 		private int[] adaptedGs;
 		private int[] minShift;
-		private Pattern[] patterns;
+		private PatternLocation[] patterns;
 
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -191,7 +179,7 @@
 				}
 				if (i >= m)
 				{
-					if(!this.OnPatternMatches!(j, this.GetType()))
+					if(!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

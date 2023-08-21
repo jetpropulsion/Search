@@ -64,7 +64,7 @@
 				}
 				if (i < 0)
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

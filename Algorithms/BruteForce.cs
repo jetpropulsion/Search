@@ -33,7 +33,7 @@
 				}
 				if (i >= m)
 				{
-					if (!base.OnPatternMatches!(j, this.GetType()))
+					if (!base.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

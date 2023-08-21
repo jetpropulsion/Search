@@ -57,7 +57,7 @@
 				byte c = buffer[j + mm1];
 				if (pattern[mm1] == c && pattern.SequenceEqual(buffer[j..(j + m)]))
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

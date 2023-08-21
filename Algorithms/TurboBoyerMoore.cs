@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Interfaces;
 
 	using System.Runtime.CompilerServices;
@@ -12,6 +13,8 @@
 	//	worst case:							2n text character comparisons
 	//	ref:										CROCHEMORE, M., CZUMAJ A., GASIENIEC L., JAROMINEK S., LECROQ T., PLANDOWSKI W., RYTTER W., 1992, Deux m�thodes pour acc�l�rer l'algorithme de Boyer-Moore, in Th�orie des Automates et Applications, Actes des 2e Journ�es Franco-Belges, D. Krob ed., Rouen, France, 1991, pp 45-63, PUR 176, Rouen, France.
 	/// </summary>
+
+	[Slow]
 	public class TurboBoyerMoore : BoyerMoore, ISearch
 	{
 
@@ -52,7 +55,7 @@
 				}
 				if (i < 0)
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

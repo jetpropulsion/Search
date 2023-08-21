@@ -15,7 +15,7 @@
 	//	preprocess complexity:	O(m+s*s) time and space
 	//	search complexity:			O(mn) time
 	//	worst case:							n*n text character comparisons (quadratic worst case)
-	//	ref:										D.Cantone and S.Faro. 	Fast-Search Algorithms: New Efficient Variants of the Boyer-Moore Pattern-Matching Algorithm. J.Autom.Lang.Comb., vol.10, n.5/6, pp.589--608, (2005).
+	//	ref:										D.Cantone and S.Faro. 	Fast-Search Algorithms: New Efficient Variants of the Boyer-Moore PatternLocation-Matching Algorithm. J.Autom.Lang.Comb., vol.10, n.5/6, pp.589--608, (2005).
 	/// </summary>
 	/// 
 
@@ -151,7 +151,7 @@
 				{
 					if (s < n)
 					{
-						if(!this.OnPatternMatches!(s - m + 1, this.GetType()))
+						if(!this.OnMatchFound!(s - m + 1, this.GetType()))
 						{
 							return;
 						}

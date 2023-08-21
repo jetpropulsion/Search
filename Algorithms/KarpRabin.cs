@@ -56,7 +56,7 @@
 			{
 				if(hx == hy	&& pattern.SequenceEqual(buffer.Slice(j, m)))
 				{
-					if(!this.OnPatternMatches!(j, this.GetType()))
+					if(!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

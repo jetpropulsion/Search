@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -13,6 +14,7 @@
 	//	worst case:							3n text character comparisons (when searching non-periodic pattern)
 	//	ref:										BOYER R.S., MOORE J.S., 1977, A fast string searching algorithm. Communications of the ACM. 20:762-772.
 	/// </summary>
+	[Slow]
 	public class BoyerMoore : SearchBase
 	{
 		public BadCharsBoyerMoore? BadChars { get; protected set; } = null;
@@ -63,7 +65,7 @@
 				}
 				if (i < 0)
 				{
-					if (!this.OnPatternMatches!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, this.GetType()))
 					{
 						return;
 					}

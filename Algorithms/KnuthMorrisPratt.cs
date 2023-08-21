@@ -59,7 +59,7 @@
 				j++;
 				if (i >= m)
 				{
-					if(!this.OnPatternMatches!(j - i, this.GetType()))
+					if(!this.OnMatchFound!(j - i, this.GetType()))
 					{
 						return;
 					}
