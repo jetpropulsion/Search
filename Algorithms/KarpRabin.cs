@@ -60,11 +60,11 @@
 					{
 						return;
 					}
-					if (j == n - m)
-					{
-						//NOTE: Fix, original was breaking the bounds on very last comparison
-						break;
-					}
+				}
+				if (j + m >= size)
+				{
+					//NOTE: Fix, original was breaking the bounds on very last comparison
+					break;
 				}
 				hy = rehash(buffer[j], buffer[j + m], hy);
 				++j;

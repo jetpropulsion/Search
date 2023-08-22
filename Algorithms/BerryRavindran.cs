@@ -82,12 +82,7 @@
 						return;
 					}
 				}
-				//if (j >= nmm || j + m > size || j + mp1 > size)
-				//{
-				//	//NOTE: Fix, original was breaking the bounds on very last comparison
-				//	break;
-				//}
-				if (j >= nmm)
+				if (j > nmm)
 				{
 					//NOTE: Fix, original was breaking the bounds on very last comparison
 					break;

@@ -61,7 +61,8 @@
 			int m = pattern.Length;
 			int n = size;
 			int mm1 = m - 1;
-			int mm2 = mm1 - 1;
+			int mm2 = m - 2;
+			int mm3 = m - 3;
 			int mr1 = m >> 1;
 
 			byte first = pattern[0];
@@ -70,6 +71,8 @@
 
 			ReadOnlySpan<byte> innerPattern = pattern[1..mm2];
 
+			Type type = this.GetType();
+
 			while (j <= n - m)
 			{
 				byte c = buffer[j + mm1];
@@ -77,10 +80,11 @@
 				if (last == c &&
 						middle == buffer[j + mr1] &&
 						first == buffer[j] &&
-						innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
+						//innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
+						innerPattern.SequenceEqual(buffer.Slice(j + 1, mm3))
 				)
 				{
-					if (!this.OnMatchFound!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

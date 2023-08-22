@@ -14,7 +14,7 @@
 	//C. Hancart. Analyse exacte et en moyenne d'algorithmes de recherche d'un motif dans un texte. (1993).
 
 	//[Experimental(nameof(NotSoNaive))]
-	[Slow]
+	//[Slow]
 	public class NotSoNaive : SearchBase
 	{
 #if DEBUG
