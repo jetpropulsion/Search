@@ -34,6 +34,12 @@
 		/// </summary>
 		abstract void Validate();
 
+		/// <summary>
+		/// When overriden, allows us to accomodate search buffer with stop patterns for some algorithms
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <param name="bufferSize"></param>
+		/// <param name="pattern"></param>
 		abstract void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern);
 	};
 };

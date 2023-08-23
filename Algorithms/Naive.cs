@@ -1,10 +1,12 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
 	using System.Runtime.CompilerServices;
 
+	[Slow]
 	public class Naive : SearchBase
 	{
 #if DEBUG
