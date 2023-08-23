@@ -31,14 +31,20 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public override bool IsEnlargementNeeded() => true;
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public override void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, out int bufferSize, out byte[] enlargedBuffer)
+		public override void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
 		{
+			int additionalSize = buffer.Length - bufferSize;
+			if(additionalSize >= pattern.Length)
+			{
+				buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				return;
+			}
+			int additionalSizeToAdd = pattern.Length - additionalSize;
 			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
-			SearchBase.GetEnlargedBuffer(buffer, pattern, pattern.Length, out bufferSize, out enlargedBuffer);
-			Array.Fill<byte>(enlargedBuffer, 0, bufferSize, pattern.Length);
+			byte[] enlargedBuffer;
+			SearchBase.GetEnlargedBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+			buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+			buffer = new Memory<byte>(enlargedBuffer);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]

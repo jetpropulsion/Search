@@ -61,12 +61,11 @@
 		//Method is intentionally throwing an exception on Search() attempt. To resolve, inherit from SearchBase
 		public virtual void Search(in ReadOnlyMemory<byte> bufferMemory, int offset, int size) => throw new NotImplementedException(nameof(Search));
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public virtual bool IsEnlargementNeeded() => false;
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public virtual void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, out int bufferSize, out byte[] enlargedBuffer) =>
-			GetEnlargedBuffer(buffer, pattern, 0, out bufferSize, out enlargedBuffer);
+		public virtual void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+		{
+			//Default implementation does nothing (patching is done on each algorithm separately, not all of them require special handling)
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public static void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, int additionalSize, out int bufferSize, out byte[] enlargedBuffer)

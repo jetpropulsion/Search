@@ -107,6 +107,27 @@
 			ArgumentNullException.ThrowIfNull(this.bm_gs, nameof(this.bm_gs));
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public override void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+		{
+			int additionalSize = buffer.Length - bufferSize;
+			if (additionalSize >= pattern.Length)
+			{
+				buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				return;
+			}
+			int additionalSizeToAdd = pattern.Length - additionalSize;
+
+			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
+			byte[] enlargedBuffer;
+			SearchBase.GetEnlargedBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+
+			//Array.Fill<byte>(enlargedBuffer, 0, bufferSize, pattern.Length);
+			Span<byte> enlargedBufferEnd = enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length);
+			pattern.Span.CopyTo(enlargedBufferEnd);
+			buffer = new Memory<byte>(enlargedBuffer);
+		}
+
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 #else
