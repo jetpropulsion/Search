@@ -68,13 +68,14 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public static void GetEnlargedBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, int additionalSize, out int bufferSize, out byte[] enlargedBuffer)
+		public static void EnlargeBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, int additionalSize, out int bufferSize, out byte[] enlargedBuffer)
 		{
 			bufferSize = buffer.Length;
 			//TODO: increment enlargedSize in inherited classes, as needed
 			int enlargedSize = buffer.Length + additionalSize;
 			enlargedBuffer = new byte[enlargedSize];
-			Array.Copy(buffer.ToArray(), 0, enlargedBuffer, 0, bufferSize);
+			buffer.Span.CopyTo(enlargedBuffer.AsSpan().Slice(0, bufferSize));
+			//Array.Copy(buffer.ToArray(), 0, enlargedBuffer, 0, bufferSize);
 		}
 	};
 };

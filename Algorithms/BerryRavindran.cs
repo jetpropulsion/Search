@@ -42,7 +42,7 @@
 			int additionalSizeToAdd = pattern.Length - additionalSize;
 			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
 			byte[] enlargedBuffer;
-			SearchBase.GetEnlargedBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
 			buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
 			buffer = new Memory<byte>(enlargedBuffer);
 		}
@@ -88,11 +88,11 @@
 						return;
 					}
 				}
-				if (j > nmm)
-				{
-					//NOTE: Fix, original was breaking the bounds on very last comparison
-					break;
-				}
+				//if (j > nmm)
+				//{
+				//	//NOTE: Fix, original was breaking the bounds on very last comparison
+				//	break;
+				//}
 				j += this.BadChars![ buffer[j + m], buffer[j + mp1] ];
 			}
 		}

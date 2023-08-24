@@ -184,11 +184,11 @@
 						return;
 					}
 				}
-				if (j == nmm)
-				{
-					//NOTE: Fix, original was breaking the bounds on very last comparison
-					break;
-				}
+				//if (j >= nmm)
+				//{
+				//	//NOTE: Fix, original was breaking the bounds on very last comparison
+				//	break;
+				//}
 				j += Math.Max(adaptedGs[i], qsBc[buffer[j + m]]);
 			}
 

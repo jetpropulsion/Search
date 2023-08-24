@@ -31,7 +31,7 @@
 		public BackwardFast() :
 			base()
 		{
-			bm_gs = null;
+			this.bm_gs = null;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -120,7 +120,7 @@
 
 			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
 			byte[] enlargedBuffer;
-			SearchBase.GetEnlargedBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
 
 			//Array.Fill<byte>(enlargedBuffer, 0, bufferSize, pattern.Length);
 			Span<byte> enlargedBufferEnd = enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length);
