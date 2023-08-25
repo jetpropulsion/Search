@@ -43,7 +43,7 @@
 			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
 			byte[] enlargedBuffer;
 			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
-			buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+			enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length).Fill(0);
 			buffer = new Memory<byte>(enlargedBuffer);
 		}
 

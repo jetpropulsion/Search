@@ -74,8 +74,8 @@
 			//TODO: increment enlargedSize in inherited classes, as needed
 			int enlargedSize = buffer.Length + additionalSize;
 			enlargedBuffer = new byte[enlargedSize];
-			buffer.Span.CopyTo(enlargedBuffer.AsSpan().Slice(0, bufferSize));
-			//Array.Copy(buffer.ToArray(), 0, enlargedBuffer, 0, bufferSize);
+			//buffer.Span.CopyTo(enlargedBuffer.AsSpan().Slice(0, bufferSize));
+			Array.Copy(buffer.ToArray(), 0, enlargedBuffer, 0, bufferSize);
 		}
 	};
 };

@@ -7,6 +7,8 @@
 	using System.Runtime.CompilerServices;
 
 	//[Slow]
+
+	[Unstable]
 	public class Naive : SearchBase
 	{
 #if DEBUG

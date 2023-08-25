@@ -19,7 +19,8 @@
 	/// </summary>
 	/// 
 
-	//[Experimental(nameof(BackwardFast))]
+	//[Experimental]
+	[Unstable]
 	public class BackwardFast : SearchBase
 	{
 		//public GoodSuffixesBoyerMoore? GoodSuffixes { get; protected set; } = null;
@@ -113,7 +114,8 @@
 			int additionalSize = buffer.Length - bufferSize;
 			if (additionalSize >= pattern.Length)
 			{
-				buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				//buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				pattern.Span.CopyTo(buffer.Slice(bufferSize, pattern.Length).Span);
 				return;
 			}
 			int additionalSizeToAdd = pattern.Length - additionalSize;
