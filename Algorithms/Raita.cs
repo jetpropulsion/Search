@@ -15,7 +15,7 @@
 	/// ref:										RAITA T., 1992, Tuning the Boyer-Moore-Horspool string searching algorithm, Software - Practice & Experience, 22(10):879-884.
 	/// </summary>
 
-	[Unstable]
+	[Unstable("Hallucinates Offsets on Pattern.Length - 1 Pattern Copy")]
 	public class Raita : SearchBase
 	{
 		protected BadCharsBoyerMoore? BadChars = null;
@@ -80,7 +80,7 @@
 						middle == buffer[j + mr1] &&
 						first == buffer[j] &&
 						innerPattern.SequenceEqual(buffer[(j + 1)..(j + mm2)])
-						//innerPattern.SequenceEqual(buffer.Slice(j + 1, mm3))
+						//innerPattern.SequenceEqual(buffer.Slice(j + 1, mm2))
 				)
 				{
 					if (!this.OnMatchFound!(j, type))

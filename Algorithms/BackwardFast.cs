@@ -148,33 +148,36 @@
 
 			int mm1 = m - 1;
 			int mm2 = m - 2;
+			int mp1 = m + 1;
 
 			//Searching
-			int j, k, s;
 			int[] bc = new int[ISearch.MaxAlphabetSize];
 			int first;
 
-			/* Preprocessing */
+			//Preprocessing
 			for (int i = 0; i < ISearch.MaxAlphabetSize; i++) bc[i] = m;
 			for (int i = 0; i < m; i++) bc[pattern[i]] = m - i - 1;
 			//for (int i = 0; i < m; i++) y[n + i] = x[i];
 			//PreBFS(x, m, gs);
 
-			/* Searching */
-			s = m - 1;
+			//Searching
+			int s = mm1;
 			first = bm_gs[1, pattern[0]];
+			Type type = this.GetType();
+
+			int j, k;
 			while (s < n)
 			{
 				while ((k = bc[buffer[s]]) != 0)
 				{
 					s += k;
 				}
-				for (j = s - 1, k = m - 1; k > 0 && pattern[k - 1] == buffer[j]; k--, j--) ;
+				for (j = s - 1, k = mm1; k > 0 && pattern[k - 1] == buffer[j]; k--, j--) ;
 				if (k == 0)
 				{
 					if (s < n)
 					{
-						if(!this.OnMatchFound!(s - m + 1, this.GetType()))
+						if(!this.OnMatchFound!(s - mp1, type))
 						{
 							return;
 						}

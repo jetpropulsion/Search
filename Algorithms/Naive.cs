@@ -6,8 +6,7 @@
 
 	using System.Runtime.CompilerServices;
 
-	//[Slow]
-
+	[Slow]
 	[Unstable]
 	public class Naive : SearchBase
 	{
