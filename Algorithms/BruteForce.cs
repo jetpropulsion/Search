@@ -23,6 +23,7 @@
 			//Searching
 			int m = pattern.Length;
 			int n = size;
+			Type type = this.GetType();
 
 			for (int j = offset; j <= n - m; ++j)
 			{
@@ -33,7 +34,7 @@
 				}
 				if (i >= m)
 				{
-					if (!base.OnMatchFound!(j, this.GetType()))
+					if (!base.OnMatchFound!(j, type))
 					{
 						return;
 					}

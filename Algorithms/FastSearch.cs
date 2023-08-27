@@ -19,81 +19,46 @@
 	/// </summary>
 	/// 
 
-	[Unstable]
-	public class BackwardFast : SearchBase
+	[Experimental]
+	public class FastSearch : SearchBase
 	{
-		protected int[,]? bm_gs;
+		protected int[]? bm_gs;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public BackwardFast() :
+		public FastSearch() :
 			base()
 		{
 			this.bm_gs = null;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-		public override void Init(in ReadOnlyMemory<byte> patternMemory, ISearch.OnMatchFoundDelegate patternMatched)
+		public override void Init(in ReadOnlyMemory<byte> pattern, ISearch.OnMatchFoundDelegate patternMatched)
 		{
-			base.Init(patternMemory, patternMatched);
+			base.Init(pattern, patternMatched);
 
-			bm_gs = new int[patternMemory.Length + 1, ISearch.MaxAlphabetSize];
+			bm_gs = new int[pattern.Length + 1];
 
-			int m = patternMemory.Length;
-			ReadOnlySpan<byte> x = patternMemory.Span;
+			int m = pattern.Length;
+			ReadOnlySpan<byte> x = pattern.Span;
 
-			int i, j, c, last, suffix_len;
-			int[] temp = new int[patternMemory.Length + 1];
-			suffix_len = 1;
-			last = m - 1;
-			for (i = 0; i <= m; i++)
+			int i, j, p;
+			int[] f = new int[m + 1];
+			for (i = 0; i < m; i++) bm_gs[i] = 0;
+			f[m] = j = m + 1;
+			for (i = m; i > 0; i--)
 			{
-				for (j = 0; j < ISearch.MaxAlphabetSize; j++)
+				while (j <= m && x[i - 1] != x[j - 1])
 				{
-					bm_gs[i, j] = m;
+					if (bm_gs[j] == 0) bm_gs[j] = j - i;
+					j = f[j];
 				}
+				f[i - 1] = --j;
 			}
-			for (i = 0; i <= m; i++) temp[i] = -1;
-			for (i = m - 2; i >= 0; i--)
-				if (x[i] == x[last])
-				{
-					temp[last] = i;
-					last = i;
-				}
-			suffix_len++;
-			while (suffix_len <= m)
+			p = f[0];
+			for (j = 0; j <= m; ++j)
 			{
-				last = m - 1;
-				i = temp[last];
-				while (i >= 0)
-				{
-					if (i - suffix_len + 1 >= 0)
-					{
-						if (x[i - suffix_len + 1] == x[last - suffix_len + 1])
-						{
-							temp[last] = i;
-							last = i;
-						}
-						if (bm_gs[m - suffix_len + 1, x[i - suffix_len + 1]] > m - 1 - i)
-						{
-							bm_gs[m - suffix_len + 1, x[i - suffix_len + 1]] = m - 1 - i;
-						}
-					}
-					else
-					{
-						temp[last] = i;
-						last = i;
-						for (c = 0; c < ISearch.MaxAlphabetSize; c++)
-						{
-							if (bm_gs[m - suffix_len + 1, c] > m - 1 - i)
-							{
-								bm_gs[m - suffix_len + 1, c] = m - 1 - i;
-							}
-						}
-					}
-					i = temp[i];
-				}
-				temp[last] = -1;
-				suffix_len++;
+				if (bm_gs[j] == 0) bm_gs[j] = p;
+				if (j == p) p = f[p];
 			}
 		}
 
@@ -106,7 +71,7 @@
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
-			=> AppendPatternFixSearchBuffer(ref buffer, bufferSize, pattern);
+			=> AppendLastPatternCharFixSearchBuffer(ref buffer, bufferSize, pattern);
 
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -124,46 +89,66 @@
 			int m = pattern.Length;
 			int n = size;
 
+
 			int mm1 = m - 1;
 			int mm2 = m - 2;
 			int mp1 = m + 1;
 
-			//Searching
+			ReadOnlySpan<byte> x = pattern;
+			ReadOnlySpan<byte> y = buffer;
+
+			int a, i, j, s;
 			int[] bc = new int[ISearch.MaxAlphabetSize];
-			int first;
+			byte ch = pattern[m - 1];
 
 			//Preprocessing
-			for (int i = 0; i < ISearch.MaxAlphabetSize; i++) bc[i] = m;
-			for (int i = 0; i < m; i++) bc[pattern[i]] = m - i - 1;
-			//for (int i = 0; i < m; i++) y[n + i] = x[i];
-			//PreBFS(x, m, gs);
+			for (a = 0; a < ISearch.MaxAlphabetSize; a++)
+			{
+				bc[a] = m;
+			}
+			for (j = 0; j < m; j++)
+			{
+				bc[x[j]] = m - j - 1;
+			}
 
-			//Searching
-			int s = mm1;
-			first = bm_gs![1, pattern[0]];
+			//Pre_GS(x, m, gs);
+			//for (i = 0; i < m; i++)
+			//{
+			//	y[n + i] = ch;
+			//}
+
 			Type type = this.GetType();
 
-			int j, k;
+			//Searching
+			if (pattern.SequenceEqual(buffer.Slice(0, m)))
+			{
+				if(!this.OnMatchFound!(0, type))
+				{
+					return;
+				}
+			}
+			s = m;
 			while (s < n)
 			{
-				while ((k = bc[buffer[s]]) != 0)
+				int k;
+				while ((k = bc[y[s]]) != 0)
 				{
 					s += k;
 				}
-				for (j = s - 1, k = mm1; k > 0 && pattern[k - 1] == buffer[j]; k--, j--) ;
-				if (k == 0)
+				j = 2;
+				while (j <= m && x[m - j] == y[s - j + 1])
 				{
-					if (s < n)
-					{
-						if(!this.OnMatchFound!(s - mp1, type))
-						{
-							return;
-						}
-					}
-					s += first;
+					j++;
 				}
-				else s += bm_gs[k, buffer[j]];
+				if (j > m && s < n)
+				{
+					if(!this.OnMatchFound!(s - m + 1, type))
+					{
+						return;
+					}
+				}
+				s += bm_gs![m - j + 1];
 			}
 		}
-	}
+	}	//END: class FastSearch
 };  //END: namespace Search

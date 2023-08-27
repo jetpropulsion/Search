@@ -68,6 +68,63 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public void FillWithZerosFixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+		{
+			int additionalSize = buffer.Length - bufferSize;
+			if (additionalSize >= pattern.Length)
+			{
+				buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				return;
+			}
+			int additionalSizeToAdd = pattern.Length - additionalSize;
+			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
+			byte[] enlargedBuffer;
+			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+			enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length).Fill(0);
+			buffer = new Memory<byte>(enlargedBuffer);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public void AppendPatternFixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+		{
+			int additionalSize = buffer.Length - bufferSize;
+			if (additionalSize >= pattern.Length)
+			{
+				//buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
+				pattern.Span.CopyTo(buffer.Slice(bufferSize, pattern.Length).Span);
+				return;
+			}
+			int additionalSizeToAdd = pattern.Length - additionalSize;
+
+			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
+			byte[] enlargedBuffer;
+			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+
+			//Array.Fill<byte>(enlargedBuffer, 0, bufferSize, pattern.Length);
+			Span<byte> enlargedBufferEnd = enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length);
+			pattern.Span.CopyTo(enlargedBufferEnd);
+			buffer = new Memory<byte>(enlargedBuffer);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public void AppendLastPatternCharFixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+		{
+			byte c = pattern.Span[pattern.Length - 1];
+			int additionalSize = buffer.Length - bufferSize;
+			if (additionalSize >= pattern.Length)
+			{
+				buffer.Span.Slice(bufferSize, pattern.Length).Fill(c);
+				return;
+			}
+			int additionalSizeToAdd = pattern.Length - additionalSize;
+			byte[] enlargedBuffer;
+			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
+			enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length).Fill(c);
+			buffer = new Memory<byte>(enlargedBuffer);
+		}
+
+		//This method enlarges the search buffer to allow certain search algorithms to stop
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public static void EnlargeBuffer(in ReadOnlyMemory<byte> buffer, in ReadOnlyMemory<byte> pattern, int additionalSize, out int bufferSize, out byte[] enlargedBuffer)
 		{
 			bufferSize = buffer.Length;

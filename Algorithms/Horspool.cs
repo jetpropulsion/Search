@@ -50,6 +50,8 @@
 			int mm1 = m - 1;
 			int nmm = n - m;
 
+			Type type = this.GetType();
+
 			//Searching
 			int j = offset;
 			while (j <= nmm)
@@ -57,7 +59,7 @@
 				byte c = buffer[j + mm1];
 				if (pattern[mm1] == c && pattern.SequenceEqual(buffer[j..(j + m)]))
 				{
-					if (!this.OnMatchFound!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

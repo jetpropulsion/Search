@@ -32,20 +32,7 @@
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
-		{
-			int additionalSize = buffer.Length - bufferSize;
-			if(additionalSize >= pattern.Length)
-			{
-				buffer.Span.Slice(bufferSize, pattern.Length).Fill(0);
-				return;
-			}
-			int additionalSizeToAdd = pattern.Length - additionalSize;
-			//This method enlarges the search buffer to allow certain search algorithms to stop, like this algorithm
-			byte[] enlargedBuffer;
-			SearchBase.EnlargeBuffer(buffer, pattern, additionalSizeToAdd, out bufferSize, out enlargedBuffer);
-			enlargedBuffer.AsSpan().Slice(bufferSize, pattern.Length).Fill(0);
-			buffer = new Memory<byte>(enlargedBuffer);
-		}
+			=> base.FillWithZerosFixSearchBuffer(ref buffer, bufferSize, pattern);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Validate()
@@ -74,8 +61,10 @@
 			int mm2 = m - 2;
 			int mp1 = m + 1;
 			int nmm = n - m;
-			//Searching
 
+			Type type = this.GetType();
+
+			//Searching
 			//y[n + 1] = '\0';
 
 			int j = 0;
@@ -83,7 +72,7 @@
 			{
 				if (pattern.SequenceEqual(buffer.Slice(j, m)))
 				{
-					if (!this.OnMatchFound!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

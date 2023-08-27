@@ -17,6 +17,18 @@
 	[Slow]
 	public class KarpRabin : SearchBase
 	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public int rehash(int a, int b, int h, int d)
+		{
+			long ad = a;
+			ad *= d;
+			long hmayd = h;
+			hmayd -= ad;
+			hmayd <<= 1;
+			hmayd += b;
+			return (int)hmayd; //((h - a * d) << 1) + b;
+		}
+
 #if DEBUG
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 #else
@@ -49,14 +61,16 @@
 				hy = ((hy << 1) + buffer[i]);
 			}
 
-			Func<int, int, int, int> rehash = (a, b, h) => ((h - a * d) << 1) + b;
+			//Func<int, int, int, int> rehash = (a, b, h) => ((h - a * d) << 1) + b;
+
+			Type type = this.GetType();
 
 			//Searching
 			while (j <= n - m)
 			{
 				if(hx == hy	&& pattern.SequenceEqual(buffer.Slice(j, m)))
 				{
-					if(!this.OnMatchFound!(j, this.GetType()))
+					if(!this.OnMatchFound!(j, type))
 					{
 						return;
 					}
@@ -66,7 +80,7 @@
 					//NOTE: Fix, original was breaking the bounds on very last comparison
 					break;
 				}
-				hy = rehash(buffer[j], buffer[j + m], hy);
+				hy = rehash(buffer[j], buffer[j + m], hy, d);
 				++j;
 			}
 		}

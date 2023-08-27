@@ -1,5 +1,6 @@
 ﻿namespace Search.Algorithms
 {
+	using Search.Attributes;
 	using Search.Common;
 	using Search.Interfaces;
 
@@ -12,7 +13,7 @@
 	using System.Threading.Tasks;
 	using static Search.Algorithms.MaximalShift;
 
-	//[Experimental(nameof(MaximalShift))]
+	[Experimental]
 	public class MaximalShift : SearchBase
 	{
 
@@ -131,6 +132,10 @@
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		public override void FixSearchBuffer(ref Memory<byte> buffer, int bufferSize, in ReadOnlyMemory<byte> pattern)
+			=> base.FillWithZerosFixSearchBuffer(ref buffer, bufferSize, pattern);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public override void Validate()
 		{
 			base.Validate();
@@ -167,8 +172,9 @@
 			int n = size;
 			int nmm = n - m;
 
-			//Search
+			Type type = this.GetType();
 
+			//Search
 			j = offset;
 			while (j <= nmm)
 			{
@@ -179,7 +185,7 @@
 				}
 				if (i >= m)
 				{
-					if(!this.OnMatchFound!(j, this.GetType()))
+					if(!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

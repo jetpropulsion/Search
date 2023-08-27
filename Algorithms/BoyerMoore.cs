@@ -55,6 +55,7 @@
 			int n = size;
 			int mm1 = m - 1;
 			int mp1 = m + 1;
+			Type type = this.GetType();
 
 			while (j <= n - m)
 			{
@@ -65,7 +66,7 @@
 				}
 				if (i < 0)
 				{
-					if (!this.OnMatchFound!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

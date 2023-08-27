@@ -13,7 +13,7 @@
 
 	//C. Hancart. Analyse exacte et en moyenne d'algorithmes de recherche d'un motif dans un texte. (1993).
 
-	//[Experimental(nameof(NotSoNaive))]
+	[Experimental]
 	[Slow]
 	public class NotSoNaive : SearchBase
 	{
@@ -51,6 +51,8 @@
 				ell = 2;
 			}
 
+			Type type = this.GetType();
+
 			//Searching
 			while (j <= n - m)
 			{
@@ -63,7 +65,7 @@
 					//if (memcmp(x + 2, y + j + 2, m - 2) == 0 && x[0] == y[j])
 					if (pattern[2..].Slice(0, m - 2).SequenceEqual(buffer[(j + 2)..].Slice(0, m - 2)) && pattern[0] == buffer[j])
 					{
-						if(!this.OnMatchFound!(j, this.GetType()))
+						if(!this.OnMatchFound!(j, type))
 						{
 							return;
 						}

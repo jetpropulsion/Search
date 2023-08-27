@@ -15,7 +15,7 @@
 	/// ref:										RAITA T., 1992, Tuning the Boyer-Moore-Horspool string searching algorithm, Software - Practice & Experience, 22(10):879-884.
 	/// </summary>
 
-	[Unstable("Hallucinates Offsets on Pattern.Length - 1 Pattern Copy")]
+	[Unstable("Halucinates Offsets on Pattern.Length - 1 Pattern Copy")]
 	public class Raita : SearchBase
 	{
 		protected BadCharsBoyerMoore? BadChars = null;

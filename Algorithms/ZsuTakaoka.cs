@@ -53,6 +53,8 @@
 			int mm1 = m - 1;
 			int mm2 = m - 2;
 
+			Type type = this.GetType();
+
 			//Searching
 			int j = offset;
 			while (j <= n - m)
@@ -64,7 +66,7 @@
 				}
 				if (i < 0)
 				{
-					if (!this.OnMatchFound!(j, this.GetType()))
+					if (!this.OnMatchFound!(j, type))
 					{
 						return;
 					}

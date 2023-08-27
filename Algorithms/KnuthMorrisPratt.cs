@@ -48,6 +48,8 @@
 			int m = pattern.Length;
 			int n = size;
 
+			Type type = this.GetType();
+
 			int i = 0;
 			while (j < n)
 			{
@@ -59,7 +61,7 @@
 				j++;
 				if (i >= m)
 				{
-					if(!this.OnMatchFound!(j - i, this.GetType()))
+					if(!this.OnMatchFound!(j - i, type))
 					{
 						return;
 					}
