@@ -23,12 +23,16 @@
 	public class FastSearch : SearchBase
 	{
 		protected int[]? bm_gs;
+		protected int[]? bc;
+		protected byte? ch;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 		public FastSearch() :
 			base()
 		{
 			this.bm_gs = null;
+			this.bc = null;
+			this.ch = 0;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -36,20 +40,32 @@
 		{
 			base.Init(pattern, patternMatched);
 
-			bm_gs = new int[pattern.Length + 1];
-
 			int m = pattern.Length;
 			ReadOnlySpan<byte> x = pattern.Span;
 
-			int i, j, p;
 			int[] f = new int[m + 1];
-			for (i = 0; i < m; i++) bm_gs[i] = 0;
-			f[m] = j = m + 1;
+			this.bm_gs = new int[pattern.Length + 1];
+			this.bc = new int[ISearch.MaxAlphabetSize];
+			this.ch = x[m - 1];
+
+			int i, j, p;
+
+			for (i = 0; i < m; i++)
+			{
+				bm_gs[i] = 0;
+			}
+
+			f[m] = m + 1;
+			j = m + 1;
+
 			for (i = m; i > 0; i--)
 			{
 				while (j <= m && x[i - 1] != x[j - 1])
 				{
-					if (bm_gs[j] == 0) bm_gs[j] = j - i;
+					if (this.bm_gs[j] == 0)
+					{
+						bm_gs[j] = j - i;
+					}
 					j = f[j];
 				}
 				f[i - 1] = --j;
@@ -57,9 +73,26 @@
 			p = f[0];
 			for (j = 0; j <= m; ++j)
 			{
-				if (bm_gs[j] == 0) bm_gs[j] = p;
-				if (j == p) p = f[p];
+				if (bm_gs[j] == 0)
+				{
+					bm_gs[j] = p;
+				}
+				if (j == p)
+				{
+					p = f[p];
+				}
 			}
+
+			//Preprocessing
+			for (int a = 0; a < ISearch.MaxAlphabetSize; a++)
+			{
+				bc[a] = m;
+			}
+			for (j = 0; j < m; j++)
+			{
+				bc[x[j]] = m - j - 1;
+			}
+
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -67,6 +100,8 @@
 		{
 			base.Validate();
 			ArgumentNullException.ThrowIfNull(this.bm_gs, nameof(this.bm_gs));
+			ArgumentNullException.ThrowIfNull(this.bc, nameof(this.bc));
+			ArgumentNullException.ThrowIfNull(this.ch, nameof(this.ch));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -97,19 +132,7 @@
 			ReadOnlySpan<byte> x = pattern;
 			ReadOnlySpan<byte> y = buffer;
 
-			int a, i, j, s;
-			int[] bc = new int[ISearch.MaxAlphabetSize];
-			byte ch = pattern[m - 1];
-
-			//Preprocessing
-			for (a = 0; a < ISearch.MaxAlphabetSize; a++)
-			{
-				bc[a] = m;
-			}
-			for (j = 0; j < m; j++)
-			{
-				bc[x[j]] = m - j - 1;
-			}
+			int j, s;
 
 			//Pre_GS(x, m, gs);
 			//for (i = 0; i < m; i++)
@@ -131,7 +154,7 @@
 			while (s < n)
 			{
 				int k;
-				while ((k = bc[y[s]]) != 0)
+				while ((k = this.bc![y[s]]) != 0)
 				{
 					s += k;
 				}
